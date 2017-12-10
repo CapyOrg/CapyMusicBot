@@ -20,7 +20,7 @@ public abstract class BotCommand {
         messagesHistory = messages;
     }
 
-    public abstract void execute(AbsSender absSender, User user, String[] strings);
+    public abstract void execute(AbsSender absSender, User user);
 
     public void addMessage(String message) {
         messagesHistory.add(message);
