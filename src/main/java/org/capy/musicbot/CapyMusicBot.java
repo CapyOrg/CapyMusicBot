@@ -16,17 +16,17 @@ public class CapyMusicBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            String message_text = update.getMessage().getText();
-            long chat_id = update.getMessage().getChatId();
+            String messageText = update.getMessage().getText();
+            long chatId = update.getMessage().getChatId();
 
             //getting user's data to create a User object
-            String first_name = update.getMessage().getChat().getFirstName();
-            String last_name = update.getMessage().getChat().getLastName();
+            String firstName = update.getMessage().getChat().getFirstName();
+            String lastName = update.getMessage().getChat().getLastName();
             String username = update.getMessage().getChat().getUserName();
             long id = update.getMessage().getChat().getId();
-            User user = new User(id, chat_id, username, first_name, last_name);
+            User user = new User(id, chatId, username, firstName, lastName);
 
-            switch (message_text) {
+            switch (messageText) {
                 case "/start":
                     new StartCommand().execute(this, user);
                     break;

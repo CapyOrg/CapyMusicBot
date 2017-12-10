@@ -2,6 +2,10 @@ package org.capy.musicbot.entities;
 
 import com.sun.istack.internal.Nullable;
 import org.capy.musicbot.commands.BotCommand;
+import org.mongodb.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Reference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,28 +13,33 @@ import java.util.List;
 /**
  * Created by enableee on 10.12.17.
  */
+
+@Entity(value = "users")
 public class User {
+    @Id
     private long id;
 
-    private long chat_id;
+    private long chatId;
     private String username;
-    private String first_name;
-    private String last_name;
+    private String firstName;
+    private String lastName;
     private boolean notificationModeOn;
 
+    @Reference
     private List<Artist> subscribes = new ArrayList<>();
 
+    @Embedded
     private List<BotCommand> commands = new ArrayList<>(); //list of unfinished commands
 
     public User() {
     }
 
-    public User(long id, long chat_id, String username, String first_name, String last_name) {
+    public User(long id, long chatId, String username, String firstName, String lastName) {
         this.id = id;
-        this.chat_id = chat_id;
+        this.chatId = chatId;
         this.username = username;
-        this.first_name = first_name;
-        this.last_name = last_name;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.notificationModeOn = true;
     }
 
@@ -38,20 +47,20 @@ public class User {
         return username;
     }
 
-    public String getFirstName() {
-        return first_name;
-    }
-
-    public String getLastName() {
-        return last_name;
-    }
-
     public long getId() {
         return id;
     }
 
     public long getChatId() {
-        return chat_id;
+        return chatId;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
     }
 
     public boolean isNotificationModeOn() {
@@ -73,10 +82,10 @@ public class User {
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", chat_id=" + chat_id +
+                ", chat_id=" + chatId +
                 ", username='" + username + '\'' +
-                ", first_name='" + first_name + '\'' +
-                ", last_name='" + last_name + '\'' +
+                ", first_name='" + firstName + '\'' +
+                ", last_name='" + lastName + '\'' +
                 ", subscribes=" + subscribes +
                 ", commands=" + commands +
                 '}';
