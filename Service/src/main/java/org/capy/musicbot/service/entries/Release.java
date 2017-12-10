@@ -1,16 +1,27 @@
 package org.capy.musicbot.service.entries;
 
 import java.time.Instant;
+import java.util.List;
 
 public class Release {
 
-    private String title;
+    private List<Type> types;
+    private DCType dcType;
 
+    private String title;
     private Artist artist;
     private long id;
     private Instant date;
-    private Type type;
+    private int year;
+
+    public List<Type> getTypes() {
+        return types;
+    }
     private String image;
+
+    public void setTypes(List<Type> types) {
+        this.types = types;
+    }
 
     public Release(Artist artist, long id) {
         this.artist = artist;
@@ -49,12 +60,12 @@ public class Release {
         this.date = date;
     }
 
-    public Type getType() {
-        return type;
+    public DCType getDcType() {
+        return dcType;
     }
 
-    public void setType(Type type) {
-        this.type = type;
+    public void setDCType(DCType dcType) {
+        this.dcType = dcType;
     }
 
     public String getImage() {
@@ -65,7 +76,20 @@ public class Release {
         this.image = image;
     }
 
-    public enum Type {
-        ALBUM, SINGLE, EP
+    public int getYear() {
+        return year;
     }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    public enum Type {
+        ALBUM, SINGLE, EP, LP
+    }
+
+    public enum DCType {
+        RELEASE, MASTER
+    }
+
 }
