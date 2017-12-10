@@ -1,5 +1,6 @@
 package org.capy.musicbot;
 
+import org.capy.musicbot.database.DBConfig;
 import org.capy.musicbot.service.Service;
 import org.capy.musicbot.service.ServiceContext;
 import org.capy.musicbot.service.ServiceException;
@@ -22,6 +23,7 @@ public class Main {
         //load properties to get bot token and username
         try {
             BotConfig.loadProperties();
+            DBConfig.loadProperties();
         } catch (IOException e) {
             e.printStackTrace();
         }
