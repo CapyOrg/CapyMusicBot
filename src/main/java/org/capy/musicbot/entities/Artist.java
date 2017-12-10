@@ -16,7 +16,7 @@ public class Artist {
     @Id
     private String mbid;
 
-    private String artistName;
+    private String name;
 
     @Reference
     private List<User> subscribers = new ArrayList<>();
@@ -24,16 +24,16 @@ public class Artist {
     public Artist() {}
 
     public Artist(String artistName) {
-            this.artistName = artistName.toLowerCase();
+            this.name = artistName.toLowerCase();
         }
 
-    public String getArtistName() {
-            return artistName;
+    public String getName() {
+            return name;
         }
         @Override
         public String toString() {
             return "Artist{" +
-                    "artistName='" + artistName + '\'' +
+                    "name='" + name + '\'' +
                     '}';
     }
 }
