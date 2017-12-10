@@ -70,6 +70,11 @@ public class Artist {
         return "Artist{" +
                 "name='" + name + '\'' +
                 ", mbid='" + mbid + '\'' +
+                ", url='" + url + '\'' +
+                ", image='" + image + '\'' +
+                ", discogsId=" + discogsId +
+                ", shortDescription='" + shortDescription + '\'' +
+                ", description='" + description + '\'' +
                 '}';
     }
 }
