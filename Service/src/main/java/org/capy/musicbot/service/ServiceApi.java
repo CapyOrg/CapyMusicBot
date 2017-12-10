@@ -4,7 +4,7 @@ import org.capy.musicbot.service.entries.Artist;
 import org.capy.musicbot.service.entries.Event;
 import org.capy.musicbot.service.entries.Release;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface ServiceApi {
@@ -39,6 +39,8 @@ public interface ServiceApi {
 
     ServiceResponse<List<Event>> getEvents(Artist artist) throws ServiceException;
 
-    ServiceResponse<List<Release>> getLastReleases(Artist artist, Date since) throws ServiceException;
+    ServiceResponse<List<Release>> getLastReleases(Artist artist, Instant since) throws ServiceException;
+
+    ServiceResponse<List<Release>> getLastReleases(Artist artist, Release since) throws ServiceException;
 
 }
