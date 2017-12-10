@@ -6,4 +6,10 @@ public class Release {
         ALBUM, TRACK
     }
 
+    private Artist artist;
+
+    private long id;
+
+
+
 }

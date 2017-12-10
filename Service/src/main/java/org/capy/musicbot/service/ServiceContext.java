@@ -1,5 +1,7 @@
 package org.capy.musicbot.service;
 
+import ru.blizzed.discogsdb.DiscogsAuthData;
+import ru.blizzed.discogsdb.DiscogsDBApi;
 import ru.blizzed.openlastfm.OpenLastFMContext;
 
 import java.io.File;
@@ -30,6 +32,7 @@ public class ServiceContext {
         try {
             properties = new ServiceProperties();
             OpenLastFMContext.initialize(properties.lastFMApiKey);
+            DiscogsDBApi.initialize(new DiscogsAuthData(properties.discogsApiKey, properties.discogsApiSecret));
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: 03.12.2017

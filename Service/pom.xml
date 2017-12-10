@@ -23,7 +23,11 @@
             <artifactId>openlastfm</artifactId>
             <version>1.0.2</version>
         </dependency>
+        <dependency>
+            <groupId>ru.blizzed</groupId>
+            <artifactId>discogsdb</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
-
 
 </project>
