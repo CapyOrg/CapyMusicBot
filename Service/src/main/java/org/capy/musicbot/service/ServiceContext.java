@@ -9,37 +9,33 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class ServiceContext {
+public final class ServiceContext {
 
     private static final String PROPERTIES_FILE = "Service/src/main/resources/service.properties";
-    private static ServiceContext sInstance = new ServiceContext();
-
-    private ServiceProperties properties;
+    private static Service service;
 
     private ServiceContext() {
-        init();
-    }
-
-    public static ServiceContext getInstance() {
-        return sInstance;
     }
 
     public static Service getService() {
-        return new Service();
+        if (service == null) {
+            init();
+            service = new Service();
+        }
+        return service;
     }
 
-    private void init() {
+    private static void init() {
         try {
-            properties = new ServiceProperties();
+            ServiceProperties properties = new ServiceProperties();
             OpenLastFMContext.initialize(properties.lastFMApiKey);
             DiscogsDBApi.initialize(new DiscogsAuthData(properties.discogsApiKey, properties.discogsApiSecret));
         } catch (IOException e) {
             e.printStackTrace();
-            // TODO: 03.12.2017
         }
     }
 
-    private class ServiceProperties {
+    private static class ServiceProperties {
         String lastFMApiKey;
         String discogsApiKey;
         String discogsApiSecret;
