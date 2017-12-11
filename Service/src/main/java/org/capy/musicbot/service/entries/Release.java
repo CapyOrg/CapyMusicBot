@@ -5,6 +5,14 @@ import java.util.List;
 
 public class Release {
 
+    public enum Type {
+        ALBUM, SINGLE, EP, LP
+    }
+
+    public enum DCType {
+        RELEASE, MASTER;
+    }
+
     private List<Type> types;
     private DCType dcType;
 
@@ -84,12 +92,16 @@ public class Release {
         this.year = year;
     }
 
-    public enum Type {
-        ALBUM, SINGLE, EP, LP
+    @Override
+    public String toString() {
+        return "Release{" +
+                "dcType=" + dcType +
+                ", title='" + title + '\'' +
+                ", artist=" + artist.getName() +
+                ", id=" + id +
+                ", date=" + date +
+                ", year=" + year +
+                ", image='" + image + '\'' +
+                '}';
     }
-
-    public enum DCType {
-        RELEASE, MASTER
-    }
-
 }

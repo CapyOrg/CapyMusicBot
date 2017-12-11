@@ -39,6 +39,14 @@ public interface ServiceApi {
 
     ServiceResponse<List<Event>> getEvents(Artist artist) throws ServiceException;
 
+    /**
+     * Gives last releases of given artist since given time
+     *
+     * @param artist artist whose releases needed
+     * @param since  time from which releases will be included
+     * @return {@link ServiceResponse} with {@link List} of last artist's releases
+     * @throws ServiceException if something went wrong
+     */
     ServiceResponse<List<Release>> getLastReleases(Artist artist, Instant since) throws ServiceException;
 
     ServiceResponse<List<Release>> getLastReleases(Artist artist, Release since) throws ServiceException;

@@ -21,7 +21,7 @@ public class ArtistReleaseConverter implements EntryConverter<ArtistRelease, Rel
     @Override
     public Release join(Release entry, ArtistRelease source) {
         entry.setTitle(source.getTitle());
-        entry.setDCType(Release.DCType.valueOf(source.getType()));
+        entry.setDCType(Release.DCType.valueOf(source.getType().toUpperCase()));
         entry.setYear(source.getYear());
         return entry;
     }
