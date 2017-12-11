@@ -25,7 +25,7 @@ public class Artist {
 
     public Artist(String mbid, String artistName) {
         this.mbid = mbid;
-        this.name = artistName.toLowerCase();
+        this.name = artistName;
     }
 
     public String getMbid() {
@@ -35,10 +35,15 @@ public class Artist {
     public String getName() {
             return name;
         }
-        @Override
-        public String toString() {
-            return "Artist{" +
-                    "name='" + name + '\'' +
-                    '}';
+
+    public List<User> getSubscribers() {
+        return subscribers;
+    }
+
+    @Override
+    public String toString() {
+        return "Artist{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }

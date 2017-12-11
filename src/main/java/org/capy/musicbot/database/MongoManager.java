@@ -10,6 +10,8 @@ import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.mongodb.morphia.query.UpdateResults;
 
+import java.util.List;
+
 /**
  * Created by enableee on 10.12.17.
  */
@@ -111,21 +113,28 @@ public class MongoManager implements DBManager{
     }
 
     public boolean addArtist(Artist artist) {
-        if (findArtist(artist.getMbid()) == null) {
+        if (findArtistByMbid(artist.getMbid()) == null) {
             datastore.save(artist);
             return true;
         }
         return false;
     }
 
-    public Artist findArtist(String mbid) {
+    public Artist findArtistByMbid(String mbid) {
         Query<Artist> query = datastore.createQuery(Artist.class);
         Artist artist = query.field("_id").equal(mbid).get();
         return artist;
     }
 
+    @Override
+    public Artist findArtistByName(String name) {
+        Query<Artist> query = datastore.createQuery(Artist.class);
+        Artist artist = query.field("name").equal(name).get();
+        return artist;
+    }
+
     public UpdateResults subscribeUser(long id, String mbid) {
-        Artist artist = findArtist(mbid);
+        Artist artist = findArtistByMbid(mbid);
         Query<User> query = datastore.createQuery(User.class);
 
         UpdateOperations<User> updateOperations =
@@ -137,7 +146,7 @@ public class MongoManager implements DBManager{
     }
 
     public UpdateResults unsubscribeUser(long id, String mbid) {
-        Artist artist = findArtist(mbid);
+        Artist artist = findArtistByMbid(mbid);
         Query<User> query = datastore.createQuery(User.class);
 
         UpdateOperations<User> updateOperations =
@@ -148,8 +157,14 @@ public class MongoManager implements DBManager{
         return results;
     }
 
+    public List<Artist> getSubscribesList(long id) {
+        Query<User> query = datastore.createQuery(User.class);
+        User user = query.field("_id").equal(id).get();
+        return user.getSubscribes();
+    }
+
     public boolean isUserSubscribedOnArtist(long id, String mbid) {
-        Artist artist = findArtist(mbid);
+        Artist artist = findArtistByMbid(mbid);
         if (artist == null) return false;
 
         Query<User> query = datastore
@@ -191,7 +206,7 @@ public class MongoManager implements DBManager{
         Query<Artist> query = datastore.createQuery(Artist.class);
         datastore.delete(query.field("_id").equal(mbid));
 
-        if (findArtist(mbid) == null)
+        if (findArtistByMbid(mbid) == null)
             return true;
         else
             return false;

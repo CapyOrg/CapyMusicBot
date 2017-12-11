@@ -15,6 +15,7 @@ public interface DBManager {
     boolean dropUser(long id);
 
     boolean addArtist(Artist artist);
-    Artist findArtist(String mbid);
+    Artist findArtistByMbid(String mbid);
+    Artist findArtistByName(String name);
     boolean dropArtist(String mbid);
 }

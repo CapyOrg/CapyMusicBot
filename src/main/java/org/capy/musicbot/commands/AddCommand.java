@@ -64,7 +64,8 @@ public class AddCommand extends BotCommand {
             if (iterator <= iteratorMaxValue) {
                 String photoUrl = artists.get(iterator).getImage();
                 String description = artists.get(iterator).getShortDescription();
-                description.replaceAll("<[^>]*>(.*?)<[^>]*>", "");
+                if (description != null)
+                    description.replaceAll("<[^>]*>(.*?)<[^>]*>", "");
                 String artistFullName = artists.get(iterator).getName();
                 messageBuilder
                         .append("Is that an artist you were looking for?\n\n")

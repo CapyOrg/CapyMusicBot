@@ -1,17 +1,11 @@
 package org.capy.musicbot;
 
 import org.capy.musicbot.database.DBConfig;
-import org.capy.musicbot.service.Service;
-import org.capy.musicbot.service.ServiceContext;
 import org.capy.musicbot.service.ServiceException;
-import org.capy.musicbot.service.ServiceResponse;
-import org.capy.musicbot.service.entries.Artist;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
-
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Created by enableee on 09.12.17.

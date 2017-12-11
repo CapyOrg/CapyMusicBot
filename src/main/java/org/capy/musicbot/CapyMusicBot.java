@@ -16,6 +16,7 @@ public class CapyMusicBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
@@ -42,6 +43,9 @@ public class CapyMusicBot extends TelegramLongPollingBot {
                     break;
                 case "/notifications_off":
                     new NotificationsOffCommand().execute(this, user);
+                    break;
+                case "/show_subscribes_list":
+                    new ShowSubscribesListCommand().execute(this, user);
                     break;
                 default:
                     StringBuilder builder = new StringBuilder();

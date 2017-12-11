@@ -63,6 +63,10 @@ public class User {
         return lastName;
     }
 
+    public List<Artist> getSubscribes() {
+        return subscribes;
+    }
+
     public boolean isNotificationModeOn() {
         return notificationModeOn;
     }
