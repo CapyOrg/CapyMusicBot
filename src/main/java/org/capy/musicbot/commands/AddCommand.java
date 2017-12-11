@@ -38,8 +38,9 @@ public class AddCommand extends BotCommand {
         Service service = ServiceContext.getService();
         if (phase == FIRST_PHASE) {
             mongoManager.addUser(user);
-            messageBuilder.append("Please, type in the name of the artist you want " +
-                    "to add to your subscribes list:");
+            messageBuilder
+                    .append("Please, type in the name of the artist you want ")
+                    .append("to add to your subscribes list:");
             SendMessage message = new SendMessage()
                     .setChatId(user.getChatId())
                     .setText(messageBuilder.toString());
@@ -87,9 +88,9 @@ public class AddCommand extends BotCommand {
                 mongoManager.updateCommandState(user.getId(), this);
             } else {
                 messageBuilder
-                        .append("Oops! I can't find artist you told me about. " +
-                                "Perhaps you typed artist's name wrong or this artist isn't " +
-                                "popular enough. :<");
+                        .append("Oops! I can't find artist you told me about. ")
+                        .append("Perhaps you typed artist's name wrong or this artist isn't ")
+                        .append("popular enough. :<");
                 SendMessage message = new SendMessage()
                         .setChatId(user.getChatId())
                         .setText(messageBuilder.toString());

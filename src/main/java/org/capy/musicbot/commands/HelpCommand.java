@@ -15,12 +15,15 @@ public class HelpCommand extends BotCommand {
     @Override
     public void execute(AbsSender absSender, User user) {
         StringBuilder messageBuilder = new StringBuilder();
-        messageBuilder.append("Available commands:\n" +
-                "/help - show the list of available commands\n" +
-                "/add - add an artist to your subscribes list\n" +
-                "/notifications_on - turn notifications mode on. That means " +
-                "bot will message you about the latest news.\n" +
-                "/notifications_off - turn notifications mode off.");
+        messageBuilder
+                .append("Available commands:\n")
+                .append("/help - show the list of available commands\n")
+                .append("/add - add an artist to your subscribes list\n")
+                .append("/remove - remove the artist from your subscribes list\n")
+                .append("/notifications_on - turn notifications mode on. That means ")
+                .append("bot will message you about the latest news\n")
+                .append("/notifications_off - turn notifications mode off\n")
+                .append("/show_subscribes_list - show the list of your current subscribes");
         SendMessage message = new SendMessage() // Create a message object object
                 .setChatId(user.getChatId())
                 .setText(messageBuilder.toString());

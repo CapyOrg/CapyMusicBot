@@ -20,14 +20,24 @@ public class ShowSubscribesListCommand extends BotCommand {
     public void execute(AbsSender absSender, User user) {
         StringBuilder messageBuilder = new StringBuilder();
         List<Artist> subscribes = MongoManager.getInstance().getSubscribesList(user.getId());
-        if (subscribes.size() != 0)
-            subscribes
+        int i = 0;
+        if (subscribes.size() != 0) {
+            for (Artist artist : subscribes) {
+                messageBuilder
+                        .append(Integer.toString(++i))
+                        .append(". ")
+                        .append(artist.getName())
+                        .append("\n");
+            }
+        } else
+            messageBuilder.append("You don't have any subscribes yet!");
+
+            /*subscribes
                     .stream()
                     .forEach(artist -> messageBuilder
+                            .append(Integer.toString(++i))
                             .append(artist.getName())
-                            .append("\n"));
-        else
-            messageBuilder.append("You don't have any subscribes yet!");
+                            .append("\n"));*/
 
         SendMessage message = new SendMessage()
                 .setChatId(user.getChatId())
