@@ -23,9 +23,14 @@ public class Artist {
 
     public Artist() {}
 
-    public Artist(String artistName) {
-            this.name = artistName.toLowerCase();
-        }
+    public Artist(String mbid, String artistName) {
+        this.mbid = mbid;
+        this.name = artistName.toLowerCase();
+    }
+
+    public String getMbid() {
+        return mbid;
+    }
 
     public String getName() {
             return name;
