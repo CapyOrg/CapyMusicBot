@@ -53,6 +53,9 @@ public class CapyMusicBot extends TelegramLongPollingBot {
                 case "/show_releases":
                     new ShowReleasesCommand().execute(this, user);
                     break;
+                case "/show_releases_all":
+                    new ShowReleasesAllCommand().execute(this, user);
+                    break;
                 default:
                     StringBuilder builder = new StringBuilder();
                     if (messageText.startsWith("/")) {

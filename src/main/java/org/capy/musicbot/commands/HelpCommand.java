@@ -23,7 +23,9 @@ public class HelpCommand extends BotCommand {
                 .append("/notifications_on - turn notifications mode on. That means ")
                 .append("bot will message you about the latest news\n")
                 .append("/notifications_off - turn notifications mode off\n")
-                .append("/show_subscribes_list - show the list of your current subscribes");
+                .append("/show_subscribes_list - show the list of your current subscribes\n")
+                .append("/show_releases - show releases of an exact artist that you are subscribed on\n")
+                .append("/show_releases_all - show releases of all artists that you are subscribed on");
         SendMessage message = new SendMessage() // Create a message object object
                 .setChatId(user.getChatId())
                 .setText(messageBuilder.toString());

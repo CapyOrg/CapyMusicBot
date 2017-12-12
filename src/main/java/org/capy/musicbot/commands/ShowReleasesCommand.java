@@ -34,7 +34,6 @@ public class ShowReleasesCommand extends BotCommand {
 
     @Override
     public void execute(AbsSender absSender, User user) {
-        //Instant instant = Instant.now().minus(Period.ofDays(60));
         StringBuilder messageBuilder = new StringBuilder();
         List<Artist> subscribes = MongoManager.getInstance().getSubscribesList(user.getId());
         if (phase == FIRST_PHASE) {
