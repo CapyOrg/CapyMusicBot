@@ -26,13 +26,6 @@ public class NotificationsOnCommand extends BotCommand {
         } else {
             messageBuilder.append("Oops! Something went wrong. Please, try again.");
         }
-        SendMessage message = new SendMessage()
-                .setChatId(user.getChatId())
-                .setText(messageBuilder.toString());
-        try {
-            absSender.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        sendMessageToUser(user, absSender, messageBuilder.toString());
     }
 }

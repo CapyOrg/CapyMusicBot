@@ -32,21 +32,6 @@ public class ShowSubscribesListCommand extends BotCommand {
         } else
             messageBuilder.append("You don't have any subscribes yet!");
 
-            /*subscribes
-                    .stream()
-                    .forEach(artist -> messageBuilder
-                            .append(Integer.toString(++i))
-                            .append(artist.getName())
-                            .append("\n"));*/
-
-        SendMessage message = new SendMessage()
-                .setChatId(user.getChatId())
-                .setText(messageBuilder.toString());
-
-        try {
-            absSender.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        sendMessageToUser(user, absSender, messageBuilder.toString());
     }
 }

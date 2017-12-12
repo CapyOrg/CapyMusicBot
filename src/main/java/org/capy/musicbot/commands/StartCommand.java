@@ -25,14 +25,6 @@ public class StartCommand extends BotCommand {
                 .append("I will help you to not miss news about ")
                 .append("your favorite artists. To see the list ")
                 .append("of available commands use /help");
-        SendMessage message = new SendMessage()
-                .setChatId(user.getChatId())
-                .setText(messageBuilder.toString());
-
-        try {
-            absSender.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        sendMessageToUser(user, absSender, messageBuilder.toString());
     }
 }

@@ -40,14 +40,7 @@ public class ShowReleasesCommand extends BotCommand {
             messageBuilder
                     .append("Please, type the number of artist, ")
                     .append("releases of which you want to get.");
-            SendMessage message = new SendMessage()
-                    .setChatId(user.getChatId())
-                    .setText(messageBuilder.toString());
-            try {
-                absSender.execute(message);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+            sendMessageToUser(user, absSender, messageBuilder.toString());
 
             new ShowSubscribesListCommand().execute(absSender, user);
 
@@ -97,28 +90,14 @@ public class ShowReleasesCommand extends BotCommand {
                                 e.printStackTrace();
                             }
                         } else {
-                            SendMessage message = new SendMessage()
-                                    .setChatId(user.getChatId())
-                                    .setText(messageBuilder.toString());
-                            try {
-                                absSender.execute(message);
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
-                            }
+                            sendMessageToUser(user, absSender, messageBuilder.toString());
                         }
                         messageBuilder = new StringBuilder();
                     }
                 } else {
                     messageBuilder
                             .append("This artist has no new releases.");
-                    SendMessage message = new SendMessage()
-                            .setChatId(user.getChatId())
-                            .setText(messageBuilder.toString());
-                    try {
-                        absSender.execute(message);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
-                    }
+                    sendMessageToUser(user, absSender, messageBuilder.toString());
                 }
                 MongoManager.getInstance().finishLastCommand(user.getId());
             } else {
@@ -126,14 +105,7 @@ public class ShowReleasesCommand extends BotCommand {
                 messageBuilder
                         .append("Something went wrong. Please, check if the number you typed ")
                         .append("is valid and try again.");
-                SendMessage message = new SendMessage()
-                        .setText(messageBuilder.toString())
-                        .setChatId(user.getChatId());
-                try {
-                    absSender.execute(message);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
+                sendMessageToUser(user, absSender, messageBuilder.toString());
                 MongoManager.getInstance().updateCommandState(user.getId(), this);
             }
         }

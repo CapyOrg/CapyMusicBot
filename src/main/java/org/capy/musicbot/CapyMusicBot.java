@@ -13,6 +13,15 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
  * Created by enableee on 10.12.17.
  */
 public class CapyMusicBot extends TelegramLongPollingBot {
+    private static final String START_COMMAND = "/start";
+    private static final String HELP_COMMAND = "/help";
+    private static final String ADD_COMMAND = "/add";
+    private static final String NOTIFICATIONS_OFF_COMMAND = "/notifications_off";
+    private static final String NOTIFICATIONS_ON_COMMAND = "/notifications_on";
+    private static final String REMOVE_COMMAND = "/remove";
+    private static final String SHOW_RELEASES_COMMAND = "/show_releases";
+    private static final String SHOW_RELEASES_ALL_COMMAND = "/show_releases_all";
+    private static final String SHOW_SUBSCRIBES_LIST_COMMAND = "/show_subscribes_list";
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -29,31 +38,31 @@ public class CapyMusicBot extends TelegramLongPollingBot {
             User user = new User(id, chatId, username, firstName, lastName);
 
             switch (messageText) {
-                case "/start":
+                case START_COMMAND:
                     new StartCommand().execute(this, user);
                     break;
-                case "/help":
+                case HELP_COMMAND:
                     new HelpCommand().execute(this, user);
                     break;
-                case "/add":
+                case ADD_COMMAND:
                     new AddCommand().execute(this, user);
                     break;
-                case "/notifications_on":
+                case NOTIFICATIONS_ON_COMMAND:
                     new NotificationsOnCommand().execute(this, user);
                     break;
-                case "/notifications_off":
+                case NOTIFICATIONS_OFF_COMMAND:
                     new NotificationsOffCommand().execute(this, user);
                     break;
-                case "/show_subscribes_list":
+                case SHOW_SUBSCRIBES_LIST_COMMAND:
                     new ShowSubscribesListCommand().execute(this, user);
                     break;
-                case "/remove":
+                case REMOVE_COMMAND:
                     new RemoveCommand().execute(this, user);
                     break;
-                case "/show_releases":
+                case SHOW_RELEASES_COMMAND:
                     new ShowReleasesCommand().execute(this, user);
                     break;
-                case "/show_releases_all":
+                case SHOW_RELEASES_ALL_COMMAND:
                     new ShowReleasesAllCommand().execute(this, user);
                     break;
                 default:
@@ -107,7 +116,7 @@ public class CapyMusicBot extends TelegramLongPollingBot {
         return BotConfig.getBotToken();
     }
 
-    private void sendMessageToUser(long chatId, String text) throws TelegramApiException{
+    public void sendMessageToUser(long chatId, String text) throws TelegramApiException{
         SendMessage message = new SendMessage() // Create a message object object
                 .setChatId(chatId)
                 .setText(text);

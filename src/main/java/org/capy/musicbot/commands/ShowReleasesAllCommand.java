@@ -50,14 +50,7 @@ public class ShowReleasesAllCommand extends BotCommand {
 
                 if (!releases.isEmpty() || releases == null) {
                     messageBuilder.append(artistName);
-                    SendMessage message = new SendMessage()
-                            .setChatId(user.getChatId())
-                            .setText(messageBuilder.toString());
-                    try {
-                        absSender.execute(message);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
-                    }
+                    sendMessageToUser(user, absSender, messageBuilder.toString());
                     messageBuilder = new StringBuilder();
                     hasNewReleases = true;
                     for (Release release : releases) {
@@ -83,14 +76,7 @@ public class ShowReleasesAllCommand extends BotCommand {
                                 e.printStackTrace();
                             }
                         } else {
-                            message = new SendMessage()
-                                    .setChatId(user.getChatId())
-                                    .setText(messageBuilder.toString());
-                            try {
-                                absSender.execute(message);
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
-                            }
+                            sendMessageToUser(user, absSender, messageBuilder.toString());
                         }
                         messageBuilder = new StringBuilder();
                     }
@@ -101,14 +87,7 @@ public class ShowReleasesAllCommand extends BotCommand {
             messageBuilder
                     .append("All of artists that you are subscribed on ")
                     .append("don't have any new releases now.");
-            SendMessage message = new SendMessage()
-                    .setChatId(user.getChatId())
-                    .setText(messageBuilder.toString());
-            try {
-                absSender.execute(message);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+            sendMessageToUser(user, absSender, messageBuilder.toString());
         }
     }
 }

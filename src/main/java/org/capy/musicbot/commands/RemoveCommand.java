@@ -32,14 +32,7 @@ public class RemoveCommand extends BotCommand {
             messageBuilder
                     .append("Please, type the number of artist you want to remove ")
                     .append("from your subscribes list.\n");
-            SendMessage message = new SendMessage()
-                    .setChatId(user.getChatId())
-                    .setText(messageBuilder.toString());
-            try {
-                absSender.execute(message);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+            sendMessageToUser(user, absSender, messageBuilder.toString());
 
             new ShowSubscribesListCommand().execute(absSender, user);
 
@@ -62,28 +55,14 @@ public class RemoveCommand extends BotCommand {
                             .append("I could not delete ")
                             .append(subscribes.get(Integer.parseInt(userAnswer) - 1).getName())
                             .append(" from your subscribes list!");
-                SendMessage message = new SendMessage()
-                        .setChatId(user.getChatId())
-                        .setText(messageBuilder.toString());
-                try {
-                    absSender.execute(message);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
+                sendMessageToUser(user, absSender, messageBuilder.toString());
                 MongoManager.getInstance().finishLastCommand(user.getId());
             } else {
                 iterator++;
                 messageBuilder
                         .append("Something went wrong. Please, check if the number you typed ")
                         .append("is valid and try again.");
-                SendMessage message = new SendMessage()
-                        .setChatId(user.getChatId())
-                        .setText(messageBuilder.toString());
-                try {
-                    absSender.execute(message);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
+                sendMessageToUser(user, absSender, messageBuilder.toString());
                 MongoManager.getInstance().updateCommandState(user.getId(), this);
             }
         }
