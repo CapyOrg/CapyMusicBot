@@ -2,23 +2,31 @@ package org.capy.musicbot.service.entries;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 public class Release {
 
-    public enum Type {
-        ALBUM, SINGLE, EP, LP
-    }
+    public static final long UNKNOWN_ID = -1;
 
-    public enum DCType {
-        RELEASE, MASTER;
+    public enum Type {
+        ALBUM, SINGLE, OTHER;
+
+        public static Type of(String str) {
+            if (str.toUpperCase().equals(ALBUM.name()))
+                return ALBUM;
+            else if (str.toUpperCase().equals(SINGLE.name()))
+                return SINGLE;
+            else return OTHER;
+        }
+
     }
 
     private List<Type> types;
-    private DCType dcType;
 
     private String title;
     private Artist artist;
-    private long id;
+    private long id = UNKNOWN_ID;
+    private long mainId = UNKNOWN_ID;
     private Instant date;
     private int year;
 
@@ -52,6 +60,14 @@ public class Release {
         this.id = id;
     }
 
+    public long getMainId() {
+        return mainId;
+    }
+
+    public void setMainId(long mainId) {
+        this.mainId = mainId;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -66,14 +82,6 @@ public class Release {
 
     public void setDate(Instant date) {
         this.date = date;
-    }
-
-    public DCType getDcType() {
-        return dcType;
-    }
-
-    public void setDCType(DCType dcType) {
-        this.dcType = dcType;
     }
 
     public String getImage() {
@@ -95,13 +103,25 @@ public class Release {
     @Override
     public String toString() {
         return "Release{" +
-                "dcType=" + dcType +
-                ", title='" + title + '\'' +
+                "title='" + title + '\'' +
                 ", artist=" + artist.getName() +
                 ", id=" + id +
                 ", date=" + date +
                 ", year=" + year +
                 ", image='" + image + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Release release = (Release) o;
+        return id == release.id | (mainId != UNKNOWN_ID & mainId == release.mainId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, id, mainId, date, year);
     }
 }

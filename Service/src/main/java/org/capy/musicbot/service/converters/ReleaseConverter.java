@@ -3,8 +3,10 @@ package org.capy.musicbot.service.converters;
 import org.capy.musicbot.service.entries.Artist;
 import org.capy.musicbot.service.entries.Release;
 import ru.blizzed.discogsdb.model.Image;
+import ru.blizzed.discogsdb.model.release.Format;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,21 +27,32 @@ public class ReleaseConverter implements EntryConverter<ru.blizzed.discogsdb.mod
     @Override
     public Release join(Release entry, ru.blizzed.discogsdb.model.release.Release source) {
         entry.setTitle(source.getTitle());
-        entry.setDate(Instant.parse(source.getDateAdded()));
-        List<Release.Type> types = source.getFormats().get(0).getDescriptions()
-                .stream()
-                .map(String::toUpperCase)
-                .map(Release.Type::valueOf)
-                .collect(Collectors.toList());
+        entry.setDate(ZonedDateTime.parse(source.getDateAdded()).toInstant());
+
+        List<Release.Type> types = new ArrayList<>();
+        List<Format> formats = source.getFormats();
+        formats.forEach(format -> {
+            if (format.getDescriptions() == null) types.add(Release.Type.of(format.getName()));
+            else types.addAll(format.getDescriptions()
+                    .stream()
+                    .map(Release.Type::of)
+                    .collect(Collectors.toList())
+            );
+        });
         entry.setTypes(types);
 
-        Image image = source.getImages()
-                .stream()
-                .filter(i -> i.getType().equals("primary"))
+        Image image = getImage(source.getImages(), "primary");
+
+        if (image == null) image = getImage(source.getImages(), "secondary");
+        if (image != null) entry.setImage(image.getUri());
+
+        return entry;
+    }
+
+    private Image getImage(List<Image> images, String type) {
+        return images.stream()
+                .filter(i -> i.getType().equals(type))
                 .findFirst()
                 .orElse(null);
-
-        if (image != null) entry.setImage(image.getUri());
-        return entry;
     }
 }
