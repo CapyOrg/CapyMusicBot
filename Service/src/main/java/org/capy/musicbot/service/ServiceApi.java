@@ -2,6 +2,7 @@ package org.capy.musicbot.service;
 
 import org.capy.musicbot.service.entries.Artist;
 import org.capy.musicbot.service.entries.Event;
+import org.capy.musicbot.service.entries.Location;
 import org.capy.musicbot.service.entries.Release;
 
 import java.time.Instant;
@@ -10,7 +11,7 @@ import java.util.List;
 public interface ServiceApi {
 
     /**
-     * Looks for artists by given name.
+     * Looks for artists by given name
      * The first one (if exists) will be automatically supplemented by info ({@link #supplementByInfo(Artist)})
      *
      * @param name estimated artist's name
@@ -37,8 +38,6 @@ public interface ServiceApi {
      */
     ServiceResponse<Artist> checkOutWith(Artist artist) throws ServiceException;
 
-    ServiceResponse<List<Event>> getEvents(Artist artist) throws ServiceException;
-
     /**
      * Gives last releases of given artist since given time
      *
@@ -49,6 +48,32 @@ public interface ServiceApi {
      */
     ServiceResponse<List<Release>> getLastReleases(Artist artist, Instant since) throws ServiceException;
 
+    /**
+     * Gives last releases of given artist since given release
+     *
+     * @param artist artist whose releases needed
+     * @param since  release from which releases will be included
+     * @return {@link ServiceResponse} with {@link List} of last artist's releases
+     * @throws ServiceException if something went wrong
+     */
     ServiceResponse<List<Release>> getLastReleases(Artist artist, Release since) throws ServiceException;
+
+    /**
+     * Gives given artist's events around the given location
+     *
+     * @param artist artist whose events needed
+     * @return {@link ServiceResponse} with {@link List} of last artist's events
+     * @throws ServiceException if something went wrong
+     */
+    ServiceResponse<List<Event>> getEvents(Artist artist, Location location) throws ServiceException;
+
+    /**
+     * Looks for locations by given query
+     *
+     * @param query search query
+     * @return {@link ServiceResponse} with {@link List} of the nearest locations
+     * @throws ServiceException if something went wrong
+     */
+    ServiceResponse<List<Location>> findLocation(String query) throws ServiceException;
 
 }

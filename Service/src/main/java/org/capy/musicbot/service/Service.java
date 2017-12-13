@@ -1,11 +1,9 @@
 package org.capy.musicbot.service;
 
-import org.capy.musicbot.service.converters.ArtistInfoConverter;
-import org.capy.musicbot.service.converters.ArtistReleaseConverter;
-import org.capy.musicbot.service.converters.EntryConverter;
-import org.capy.musicbot.service.converters.FoundArtistConverter;
+import org.capy.musicbot.service.converters.*;
 import org.capy.musicbot.service.entries.Artist;
 import org.capy.musicbot.service.entries.Event;
+import org.capy.musicbot.service.entries.Location;
 import org.capy.musicbot.service.entries.Release;
 import ru.blizzed.discogsdb.DiscogsDBApi;
 import ru.blizzed.discogsdb.DiscogsDBCallException;
@@ -24,12 +22,15 @@ import ru.blizzed.openlastfm.models.SearchResult;
 import ru.blizzed.openlastfm.models.artist.ArtistInfo;
 import ru.blizzed.openlastfm.models.artist.FoundArtist;
 import ru.blizzed.openlastfm.params.LastFMParams;
+import ru.blizzed.opensongkick.ApiCallException;
+import ru.blizzed.opensongkick.ApiErrorException;
+import ru.blizzed.opensongkick.SongKickApi;
+import ru.blizzed.opensongkick.params.SongKickParams;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,11 +86,6 @@ public class Service implements ServiceApi {
     }
 
     @Override
-    public ServiceResponse<List<Event>> getEvents(Artist artist) {
-        return new ServiceResponse<>(Collections.emptyList(), true);
-    }
-
-    @Override
     public ServiceResponse<List<Release>> getLastReleases(Artist artist, Instant since) throws ServiceException {
         ArtistReleaseConverter artistReleaseConverter = new ArtistReleaseConverter(artist);
         LocalDateTime date = LocalDateTime.ofInstant(since, ZoneId.systemDefault());
@@ -120,6 +116,44 @@ public class Service implements ServiceApi {
     @Override
     public ServiceResponse<List<Release>> getLastReleases(Artist artist, Release since) throws ServiceException {
         return getLastReleases(artist, since.getDate());
+    }
+
+    @Override
+    public ServiceResponse<List<Event>> getEvents(Artist artist, Location location) throws ServiceException {
+        EventConverter converter = new EventConverter();
+        try {
+            List<Event> locations = SongKickApi.eventSearch()
+                    .byArtist(
+                            artist.getName(),
+                            SongKickParams.LOCATION_GEO.of(location.getLatitude(), location.getLongitude()),
+                            SongKickParams.PER_PAGE.of(SEARCH_LIMIT)
+                    )
+                    .execute()
+                    .getResults()
+                    .stream()
+                    .map(converter::convert)
+                    .collect(Collectors.toList());
+            return new ServiceResponse<>(locations, true);
+        } catch (ApiCallException | ApiErrorException e) {
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public ServiceResponse<List<Location>> findLocation(String query) throws ServiceException {
+        LocationConverter converter = new LocationConverter();
+        try {
+            List<Location> locations = SongKickApi.locationSearch()
+                    .byQuery(query, SongKickParams.PER_PAGE.of(SEARCH_LIMIT))
+                    .execute()
+                    .getResults()
+                    .stream()
+                    .map(converter::convert)
+                    .collect(Collectors.toList());
+            return new ServiceResponse<>(locations, true);
+        } catch (ApiCallException | ApiErrorException e) {
+            throw new ServiceException(e);
+        }
     }
 
     private Page<ArtistRelease> getReleases(Artist artist, int page) throws DiscogsDBErrorException, DiscogsDBCallException {

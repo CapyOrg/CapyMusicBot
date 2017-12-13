@@ -3,6 +3,7 @@ package org.capy.musicbot.service;
 import ru.blizzed.discogsdb.DiscogsAuthData;
 import ru.blizzed.discogsdb.DiscogsDBApi;
 import ru.blizzed.openlastfm.OpenLastFMContext;
+import ru.blizzed.opensongkick.OpenSongKickContext;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,6 +31,7 @@ public final class ServiceContext {
             ServiceProperties properties = new ServiceProperties();
             OpenLastFMContext.initialize(properties.lastFMApiKey);
             DiscogsDBApi.initialize(new DiscogsAuthData(properties.discogsApiKey, properties.discogsApiSecret));
+            OpenSongKickContext.initialize(properties.songkickApiKey);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -39,6 +41,7 @@ public final class ServiceContext {
         String lastFMApiKey;
         String discogsApiKey;
         String discogsApiSecret;
+        String songkickApiKey;
 
         ServiceProperties() throws IOException {
             Properties properties = new Properties();
@@ -46,6 +49,7 @@ public final class ServiceContext {
             this.lastFMApiKey = properties.getProperty("lastfm.api_key");
             this.discogsApiKey = properties.getProperty("discogs.api_key");
             this.discogsApiSecret = properties.getProperty("discogs.api_secret");
+            this.songkickApiKey = properties.getProperty("songkick.api_key");
         }
     }
 
