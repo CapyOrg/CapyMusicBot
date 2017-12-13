@@ -1,6 +1,5 @@
 package org.capy.musicbot.commands;
 
-import org.capy.musicbot.CapyMusicBot;
 import org.capy.musicbot.database.MongoManager;
 import org.capy.musicbot.entities.User;
 import org.capy.musicbot.service.Service;
@@ -8,12 +7,16 @@ import org.capy.musicbot.service.ServiceContext;
 import org.capy.musicbot.service.ServiceException;
 import org.capy.musicbot.service.entries.Artist;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.bots.AbsSender;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.capy.musicbot.BotHelper.sendMessageToUser;
+import static org.capy.musicbot.BotHelper.sendMessageWithKeyboardToUser;
+import static org.capy.musicbot.BotHelper.createYesOrNoKeyboard;
 
 /**
  * Created by enableee on 10.12.17.
@@ -78,12 +81,13 @@ public class AddCommand extends BotCommand {
                         .setChatId(user.getChatId())
                         .setPhoto(photoUrl)
                         .setCaption(messageBuilder.toString());
-
+                ReplyKeyboardMarkup replyKeyboardMarkup = createYesOrNoKeyboard();
                 try {
                     absSender.sendPhoto(photoMessage);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
+                sendMessageWithKeyboardToUser(user, absSender, "Please, press \"yes\" or \"no\"", replyKeyboardMarkup);
                 phase = THIRD_PHASE;
                 mongoManager.updateCommandState(user.getId(), this);
             } else {
@@ -120,8 +124,9 @@ public class AddCommand extends BotCommand {
                 this.execute(absSender, user);
             } else {
                 messageBuilder
-                        .append("Please, type \"yes\" or \"no\".");
-                sendMessageToUser(user, absSender, messageBuilder.toString());
+                        .append("Please, press \"yes\" or \"no\".");
+                ReplyKeyboardMarkup replyKeyboardMarkup = createYesOrNoKeyboard();
+                sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
             }
 
         }

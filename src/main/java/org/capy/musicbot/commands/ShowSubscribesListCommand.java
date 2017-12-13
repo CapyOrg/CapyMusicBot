@@ -9,6 +9,8 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import java.util.List;
 
+import static org.capy.musicbot.BotHelper.sendMessageToUser;
+
 /**
  * Created by enableee on 11.12.17.
  */

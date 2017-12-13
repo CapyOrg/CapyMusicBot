@@ -9,6 +9,7 @@ import org.capy.musicbot.service.ServiceException;
 import org.capy.musicbot.service.entries.Release;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.bots.AbsSender;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
@@ -16,6 +17,10 @@ import java.time.Instant;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.capy.musicbot.BotHelper.createKeyboardWithSubscribesList;
+import static org.capy.musicbot.BotHelper.sendMessageToUser;
+import static org.capy.musicbot.BotHelper.sendMessageWithKeyboardToUser;
 
 /**
  * Created by enableee on 11.12.17.
@@ -38,22 +43,23 @@ public class ShowReleasesCommand extends BotCommand {
         List<Artist> subscribes = MongoManager.getInstance().getSubscribesList(user.getId());
         if (phase == FIRST_PHASE) {
             messageBuilder
-                    .append("Please, type the number of artist, ")
+                    .append("Please, press at the button with the name of the artist, ")
                     .append("releases of which you want to get.");
-            sendMessageToUser(user, absSender, messageBuilder.toString());
 
-            new ShowSubscribesListCommand().execute(absSender, user);
-
+            ReplyKeyboardMarkup replyKeyboardMarkup;
+            replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
+            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
             phase = SECOND_PHASE;
             MongoManager.getInstance().addCommandToCommandsList(user.getId(), this);
         } else if (phase == SECOND_PHASE) {
             Service service = ServiceContext.getService();
             String userAnswer = getMessagesHistory().get(iterator);
-            if ((userAnswer.matches("^[0-9]+$")) &&
-                    (Integer.parseInt(userAnswer) > 0) &&
-                    (Integer.parseInt(userAnswer) <= subscribes.size())) {
-                String mbid = subscribes.get(Integer.parseInt(userAnswer) - 1).getMbid();
-                String artistName = subscribes.get(Integer.parseInt(userAnswer) - 1).getName();
+            String artistNumber = String.valueOf(userAnswer.charAt(0));
+            if ((artistNumber.matches("^[0-9]+$")) &&
+                    (Integer.parseInt(artistNumber) > 0) &&
+                    (Integer.parseInt(artistNumber) <= subscribes.size())) {
+                String mbid = subscribes.get(Integer.parseInt(artistNumber) - 1).getMbid();
+                String artistName = subscribes.get(Integer.parseInt(artistNumber) - 1).getName();
                 List<Release> releases = new ArrayList<>();
                 try {
                     releases = service
@@ -103,9 +109,12 @@ public class ShowReleasesCommand extends BotCommand {
             } else {
                 iterator++;
                 messageBuilder
-                        .append("Something went wrong. Please, check if the number you typed ")
-                        .append("is valid and try again.");
-                sendMessageToUser(user, absSender, messageBuilder.toString());
+                        .append("Something went wrong.\n")
+                        .append("Please, press at the button with the name of the artist, ")
+                        .append("releases of which you want to get.");
+                ReplyKeyboardMarkup replyKeyboardMarkup;
+                replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
+                sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
                 MongoManager.getInstance().updateCommandState(user.getId(), this);
             }
         }
