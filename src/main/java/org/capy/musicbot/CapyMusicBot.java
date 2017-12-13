@@ -3,10 +3,10 @@ package org.capy.musicbot;
 import org.capy.musicbot.commands.*;
 import org.capy.musicbot.database.MongoManager;
 import org.capy.musicbot.entities.User;
-import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.exceptions.TelegramApiException;
+
+import static org.capy.musicbot.BotHelper.sendMessageToUser;
 
 
 /**
@@ -71,11 +71,7 @@ public class CapyMusicBot extends TelegramLongPollingBot {
                         builder.append("I don't know this command. Please, use one of" +
                                 "available commands.\n" +
                                 "To see the list of available commands use /help");
-                        try {
-                            sendMessageToUser(chatId, builder.toString());
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
+                        sendMessageToUser(user, this, builder.toString());
                     } else {
                         user = MongoManager.getInstance().findUser(id);
                         if (user != null) {
@@ -83,11 +79,7 @@ public class CapyMusicBot extends TelegramLongPollingBot {
 
                                 builder.append("Please, use any command to start working with bot.\n")
                                         .append("To see the list of available commands use /help");
-                                try {
-                                    sendMessageToUser(chatId, builder.toString());
-                                } catch (TelegramApiException e) {
-                                    e.printStackTrace();
-                                }
+                                sendMessageToUser(user, this, builder.toString());
                             } else {
                                 user.getCurrentCommand().addMessage(messageText);
                                 user.getCurrentCommand().execute(this, user);
@@ -95,11 +87,7 @@ public class CapyMusicBot extends TelegramLongPollingBot {
                         } else {
                             builder.append("Please, use any command to start working with bot.\n")
                                     .append("To see the list of available commands use /help");
-                            try {
-                                sendMessageToUser(chatId, builder.toString());
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
-                            }
+                            sendMessageToUser(user, this, builder.toString());
                         }
                     }
             }
@@ -114,12 +102,5 @@ public class CapyMusicBot extends TelegramLongPollingBot {
     @Override
     public String getBotToken() {
         return BotConfig.getBotToken();
-    }
-
-    public void sendMessageToUser(long chatId, String text) throws TelegramApiException{
-        SendMessage message = new SendMessage() // Create a message object object
-                .setChatId(chatId)
-                .setText(text);
-        execute(message);
     }
 }

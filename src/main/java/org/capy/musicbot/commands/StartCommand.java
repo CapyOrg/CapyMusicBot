@@ -5,6 +5,8 @@ import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.bots.AbsSender;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
+import static org.capy.musicbot.BotHelper.sendMessageToUser;
+
 /**
  * Created by enableee on 10.12.17.
  */

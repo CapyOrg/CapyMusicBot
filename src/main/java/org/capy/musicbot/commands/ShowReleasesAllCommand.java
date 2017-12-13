@@ -1,14 +1,11 @@
 package org.capy.musicbot.commands;
 
-import org.capy.musicbot.CapyMusicBot;
 import org.capy.musicbot.database.MongoManager;
-import org.capy.musicbot.entities.Artist;
 import org.capy.musicbot.entities.User;
 import org.capy.musicbot.service.Service;
 import org.capy.musicbot.service.ServiceContext;
 import org.capy.musicbot.service.ServiceException;
 import org.capy.musicbot.service.entries.Release;
-import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.bots.AbsSender;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
@@ -17,6 +14,8 @@ import java.time.Instant;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.capy.musicbot.BotHelper.sendMessageToUser;
 
 /**
  * Created by enableee on 12.12.17.

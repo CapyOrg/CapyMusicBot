@@ -3,6 +3,8 @@ package org.capy.musicbot.commands;
 import org.capy.musicbot.entities.User;
 import org.telegram.telegrambots.bots.AbsSender;
 
+import static org.capy.musicbot.BotHelper.sendMessageToUser;
+
 /**
  * Created by enableee on 10.12.17.
  */

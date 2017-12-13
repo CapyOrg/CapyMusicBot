@@ -2,9 +2,7 @@ package org.capy.musicbot.commands;
 
 import org.capy.musicbot.entities.User;
 import org.mongodb.morphia.annotations.Embedded;
-import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.bots.AbsSender;
-import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,16 +28,7 @@ public abstract class BotCommand {
         messagesHistory.add(message);
     }
 
-    public void sendMessageToUser(User user, AbsSender absSender, String text) {
-        SendMessage message = new SendMessage()
-                .setChatId(user.getChatId())
-                .setText(text);
-        try {
-            absSender.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-    }
+
 
     public List<String> getMessagesHistory() {
         return messagesHistory;
