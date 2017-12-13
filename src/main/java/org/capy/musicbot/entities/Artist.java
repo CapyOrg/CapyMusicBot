@@ -23,17 +23,27 @@ public class Artist {
 
     public Artist() {}
 
-    public Artist(String artistName) {
-            this.name = artistName.toLowerCase();
-        }
+    public Artist(String mbid, String artistName) {
+        this.mbid = mbid;
+        this.name = artistName;
+    }
+
+    public String getMbid() {
+        return mbid;
+    }
 
     public String getName() {
             return name;
         }
-        @Override
-        public String toString() {
-            return "Artist{" +
-                    "name='" + name + '\'' +
-                    '}';
+
+    public List<User> getSubscribers() {
+        return subscribers;
+    }
+
+    @Override
+    public String toString() {
+        return "Artist{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }

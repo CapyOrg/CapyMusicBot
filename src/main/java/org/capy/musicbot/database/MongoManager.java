@@ -10,10 +10,12 @@ import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.mongodb.morphia.query.UpdateResults;
 
+import java.util.List;
+
 /**
  * Created by enableee on 10.12.17.
  */
-public class MongoManager {
+public class MongoManager implements DBManager{
     private static volatile MongoClient mongoClient;
     private static Morphia morphia;
     private static Datastore datastore;
@@ -74,7 +76,12 @@ public class MongoManager {
         return results;
     }
 
-    public void finishCommand(long id, BotCommand command) {
+    public UpdateResults updateCommandState(long id, BotCommand command) {
+        finishLastCommand(id);
+        return addCommandToCommandsList(id, command);
+    }
+
+    public void finishLastCommand(long id) {
         if (findUser(id) != null) {
             Query<User> query = datastore.createQuery(User.class);
             UpdateOperations<User> updateOperations =
@@ -100,51 +107,64 @@ public class MongoManager {
         Query<User> query = datastore.createQuery(User.class);
         UpdateOperations<User> updateOperations =
                 datastore.createUpdateOperations(User.class)
-                        .set("notifications_on", modeOn);
+                        .set("notificationModeOn", modeOn);
         UpdateResults updateResults = datastore.update(query.field("_id").equal(id), updateOperations);
         return updateResults;
     }
 
     public boolean addArtist(Artist artist) {
-        if (findArtist(artist.getName()) == null) {
+        if (findArtistByMbid(artist.getMbid()) == null) {
             datastore.save(artist);
             return true;
         }
         return false;
     }
 
-    public Artist findArtist(String artistName) {
+    public Artist findArtistByMbid(String mbid) {
         Query<Artist> query = datastore.createQuery(Artist.class);
-        Artist artist = query.field("_id").equal(artistName).get();
+        Artist artist = query.field("_id").equal(mbid).get();
         return artist;
     }
 
-    public UpdateResults subscribeUser(long id, String artistName) {
-        Artist artist = findArtist(artistName);
+    @Override
+    public Artist findArtistByName(String name) {
+        Query<Artist> query = datastore.createQuery(Artist.class);
+        Artist artist = query.field("name").equal(name).get();
+        return artist;
+    }
+
+    public UpdateResults subscribeUser(long id, String mbid) {
+        Artist artist = findArtistByMbid(mbid);
         Query<User> query = datastore.createQuery(User.class);
 
         UpdateOperations<User> updateOperations =
                 datastore.createUpdateOperations(User.class)
                         .addToSet("subscribes", artist);
         UpdateResults results = datastore.update(query.field("_id").equal(id), updateOperations);
-        addSubcriberToArtist(id, artistName);
+        addSubcriberToArtist(id, mbid);
         return results;
     }
 
-    public UpdateResults unsubscribeUser(long id, String artistName) {
-        Artist artist = findArtist(artistName);
+    public UpdateResults unsubscribeUser(long id, String mbid) {
+        Artist artist = findArtistByMbid(mbid);
         Query<User> query = datastore.createQuery(User.class);
 
         UpdateOperations<User> updateOperations =
                 datastore.createUpdateOperations(User.class)
                         .removeAll("subscribes", artist);
         UpdateResults results = datastore.update(query.field("_id").equal(id), updateOperations);
-        removeSubscriberFromArtist(id, artistName);
+        removeSubscriberFromArtist(id, mbid);
         return results;
     }
 
-    public boolean isUserSubscribedOnArtist(long id, String artistName) {
-        Artist artist = findArtist(artistName);
+    public List<Artist> getSubscribesList(long id) {
+        Query<User> query = datastore.createQuery(User.class);
+        User user = query.field("_id").equal(id).get();
+        return user.getSubscribes();
+    }
+
+    public boolean isUserSubscribedOnArtist(long id, String mbid) {
+        Artist artist = findArtistByMbid(mbid);
         if (artist == null) return false;
 
         Query<User> query = datastore
@@ -158,7 +178,7 @@ public class MongoManager {
         return true;
     }
 
-    public UpdateResults addSubcriberToArtist(long id, String artistName) {
+    private UpdateResults addSubcriberToArtist(long id, String mbid) {
         User user = findUser(id);
 
         Query<Artist> query = datastore.createQuery(Artist.class);
@@ -166,11 +186,11 @@ public class MongoManager {
         UpdateOperations<Artist> updateOperations =
                 datastore.createUpdateOperations(Artist.class)
                         .addToSet("subscribers", user);
-        UpdateResults results = datastore.update(query.field("_id").equal(artistName), updateOperations);
+        UpdateResults results = datastore.update(query.field("_id").equal(mbid), updateOperations);
         return results;
     }
 
-    public UpdateResults removeSubscriberFromArtist(long id, String artistName) {
+    public UpdateResults removeSubscriberFromArtist(long id, String mbid) {
         User user = findUser(id);
 
         Query<Artist> query = datastore.createQuery(Artist.class);
@@ -178,18 +198,17 @@ public class MongoManager {
         UpdateOperations<Artist> updateOperations =
                 datastore.createUpdateOperations(Artist.class)
                         .removeAll("subscribers", user);
-        UpdateResults results = datastore.update(query.field("_id").equal(artistName), updateOperations);
+        UpdateResults results = datastore.update(query.field("_id").equal(mbid), updateOperations);
         return results;
     }
 
-    public boolean dropArtist(String artistName) {
+    public boolean dropArtist(String mbid) {
         Query<Artist> query = datastore.createQuery(Artist.class);
-        datastore.delete(query.field("_id").equal(artistName));
+        datastore.delete(query.field("_id").equal(mbid));
 
-        if (findArtist(artistName) == null)
+        if (findArtistByMbid(mbid) == null)
             return true;
         else
             return false;
-
     }
 }

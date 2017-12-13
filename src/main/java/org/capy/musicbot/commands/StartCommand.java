@@ -20,18 +20,11 @@ public class StartCommand extends BotCommand {
         messageBuilder.append("Welcome, ")
                 .append(userName)
                 .append("!\n\n");
-        messageBuilder.append("I am a CapyMusic bot.\n\n" +
-                "I will help you to not miss news about " +
-                "your favorite artists. To see the list " +
-                "of available commands use /help");
-        SendMessage message = new SendMessage() // Create a message object object
-                .setChatId(user.getChatId())
-                .setText(messageBuilder.toString());
-
-        try {
-            absSender.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        messageBuilder
+                .append("I am a CapyMusic bot.\n\n")
+                .append("I will help you to not miss news about ")
+                .append("your favorite artists. To see the list ")
+                .append("of available commands use /help");
+        sendMessageToUser(user, absSender, messageBuilder.toString());
     }
 }
