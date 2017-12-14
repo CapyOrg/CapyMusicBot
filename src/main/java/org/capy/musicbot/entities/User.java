@@ -1,7 +1,7 @@
 package org.capy.musicbot.entities;
 
-import com.sun.istack.internal.Nullable;
 import org.capy.musicbot.commands.BotCommand;
+import org.capy.musicbot.service.entries.Location;
 import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
@@ -24,6 +24,9 @@ public class User {
     private String firstName;
     private String lastName;
     private boolean notificationModeOn;
+
+    @Embedded
+    private Location location;
 
     @Reference
     private List<Artist> subscribes = new ArrayList<>();

@@ -7,12 +7,13 @@ import org.capy.musicbot.service.Service;
 import org.capy.musicbot.service.ServiceContext;
 import org.capy.musicbot.service.ServiceException;
 import org.capy.musicbot.service.entries.Release;
-import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.bots.AbsSender;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.Period;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import static org.capy.musicbot.BotHelper.sendMessageWithKeyboardToUser;
  * Created by enableee on 11.12.17.
  */
 public class ShowReleasesCommand extends BotCommand {
+    private static final int DAYS_AGO = 90;
     private int phase;
     private int iterator;
 
@@ -39,12 +41,13 @@ public class ShowReleasesCommand extends BotCommand {
 
     @Override
     public void execute(AbsSender absSender, User user) {
+        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
         StringBuilder messageBuilder = new StringBuilder();
         List<Artist> subscribes = MongoManager.getInstance().getSubscribesList(user.getId());
         if (phase == FIRST_PHASE) {
             messageBuilder
                     .append("Please, press at the button with the name of the artist, ")
-                    .append("releases of which you want to get.");
+                    .append("whose releases you want to get.");
 
             ReplyKeyboardMarkup replyKeyboardMarkup;
             replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
@@ -54,7 +57,7 @@ public class ShowReleasesCommand extends BotCommand {
         } else if (phase == SECOND_PHASE) {
             Service service = ServiceContext.getService();
             String userAnswer = getMessagesHistory().get(iterator);
-            String artistNumber = String.valueOf(userAnswer.charAt(0));
+            String artistNumber = userAnswer.split("\\.")[0];
             if ((artistNumber.matches("^[0-9]+$")) &&
                     (Integer.parseInt(artistNumber) > 0) &&
                     (Integer.parseInt(artistNumber) <= subscribes.size())) {
@@ -66,25 +69,29 @@ public class ShowReleasesCommand extends BotCommand {
                             .getLastReleases(service
                                             .checkOutWith(new org.capy.musicbot.service.entries.Artist(artistName, mbid))
                                             .getContent(),
-                                    Instant.now().minus(Period.ofDays(60)))
+                                    Instant.now().minus(Period.of(0, 0, DAYS_AGO)))
                             .getContent();
                 } catch (ServiceException e) {
                     e.printStackTrace();
                 }
 
-                if (!releases.isEmpty() || releases == null) {
+                if (!releases.isEmpty()) {
                     for (Release release : releases) {
                         messageBuilder
                                 .append(release.getTitle())
                                 .append("\n");
-                                if (release.getDate() != null)
-                                    messageBuilder
-                                            .append("Date of release: ")
-                                            .append(release.getDate());
-                                if (release.getDcType() != null)
-                                    messageBuilder
-                                            .append("Release type: ")
-                                            .append(release.getDcType());
+                        if (release.getDate() != null)
+                            messageBuilder
+                                    .append("Date of release: ")
+                                    .append(formatter.format(Date.from(release.getDate())))
+                                    .append("\n");
+                        if (release.getTypes() != null) {
+                            messageBuilder.append("Release type: ");
+                            for (Release.Type type : release.getTypes())
+                                messageBuilder
+                                        .append(type.name())
+                                        .append(" ");
+                        }
                         if (release.getImage() != null) {
                             SendPhoto photo = new SendPhoto()
                                     .setChatId(user.getChatId())

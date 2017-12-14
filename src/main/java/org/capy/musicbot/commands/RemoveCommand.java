@@ -47,7 +47,7 @@ public class RemoveCommand extends BotCommand {
             }
         } else if (phase == SECOND_PHASE) {
             String userAnswer = getMessagesHistory().get(iterator);
-            String artistNumber = String.valueOf(userAnswer.charAt(0));
+            String artistNumber = userAnswer.split("\\.")[0];
             if ((artistNumber.matches("^[0-9]+$")) &&
                     (Integer.parseInt(artistNumber) > 0) &&
                     (Integer.parseInt(artistNumber) <= subscribes.size())) {
@@ -63,7 +63,6 @@ public class RemoveCommand extends BotCommand {
                             .append("I could not delete ")
                             .append(subscribes.get(Integer.parseInt(artistNumber) - 1).getName())
                             .append(" from your subscribes list!");
-                //sendMessageToUser(user, absSender, messageBuilder.toString());
                 sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), new ReplyKeyboardMarkup().setKeyboard(new ArrayList<KeyboardRow>()));
                 MongoManager.getInstance().finishLastCommand(user.getId());
             } else {
