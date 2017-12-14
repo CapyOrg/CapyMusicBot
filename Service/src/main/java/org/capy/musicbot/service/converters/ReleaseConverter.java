@@ -41,10 +41,11 @@ public class ReleaseConverter implements EntryConverter<ru.blizzed.discogsdb.mod
         });
         entry.setTypes(types);
 
-        Image image = getImage(source.getImages(), "primary");
-
-        if (image == null) image = getImage(source.getImages(), "secondary");
-        if (image != null) entry.setImage(image.getUri());
+        if (source.getImages() != null) {
+            Image image = getImage(source.getImages(), "primary");
+            if (image == null) image = getImage(source.getImages(), "secondary");
+            if (image != null) entry.setImage(image.getUri());
+        }
 
         return entry;
     }
