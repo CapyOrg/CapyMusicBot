@@ -13,10 +13,12 @@ import java.util.List;
 
 @Entity(value = "artists")
 public class Artist {
+
     @Id
     private String mbid;
-
     private String name;
+
+    private long discogsId;
 
     @Reference
     private List<User> subscribers = new ArrayList<>();
@@ -28,6 +30,12 @@ public class Artist {
         this.name = artistName;
     }
 
+    public Artist(org.capy.musicbot.service.entries.Artist artist) {
+        this.mbid = artist.getMbid();
+        this.name = artist.getName();
+        this.discogsId = artist.getDiscogsId();
+    }
+
     public String getMbid() {
         return mbid;
     }
@@ -36,6 +44,10 @@ public class Artist {
             return name;
         }
 
+    public long getDiscogsId() {
+        return discogsId;
+    }
+
     public List<User> getSubscribers() {
         return subscribers;
     }
@@ -43,7 +55,10 @@ public class Artist {
     @Override
     public String toString() {
         return "Artist{" +
-                "name='" + name + '\'' +
+                "mbid='" + mbid + '\'' +
+                ", name='" + name + '\'' +
+                ", discogsId=" + discogsId +
+                ", subscribers=" + subscribers +
                 '}';
     }
 }

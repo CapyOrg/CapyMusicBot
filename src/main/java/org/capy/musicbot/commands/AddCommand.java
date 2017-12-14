@@ -106,9 +106,14 @@ public class AddCommand extends BotCommand {
                 } catch (ServiceException e) {
                     e.printStackTrace();
                 }
-                mongoManager.addArtist(
-                        new org.capy.musicbot.entities.Artist(artists.get(iterator).getMbid(),
-                                artists.get(iterator).getName()));
+                try {
+                    mongoManager.addArtist(new org.capy.musicbot.entities.Artist(service
+                            .checkOutWith(artists.get(iterator))
+                            .getContent()));
+                } catch (ServiceException e) {
+                    e.printStackTrace();
+                }
+
                 mongoManager.subscribeUser(user.getId(), artists.get(iterator).getMbid());
                 messageBuilder
                         .append("I successfully added ")
