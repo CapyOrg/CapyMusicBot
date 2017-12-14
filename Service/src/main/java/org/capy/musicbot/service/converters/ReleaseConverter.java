@@ -5,7 +5,8 @@ import org.capy.musicbot.service.entries.Release;
 import ru.blizzed.discogsdb.model.Image;
 import ru.blizzed.discogsdb.model.release.Format;
 
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ public class ReleaseConverter implements EntryConverter<ru.blizzed.discogsdb.mod
     @Override
     public Release join(Release entry, ru.blizzed.discogsdb.model.release.Release source) {
         entry.setTitle(source.getTitle());
-        entry.setDate(ZonedDateTime.parse(source.getDateAdded()).toInstant());
+        entry.setDate(parseDate(source));
 
         List<Release.Type> types = new ArrayList<>();
         List<Format> formats = source.getFormats();
@@ -55,5 +56,13 @@ public class ReleaseConverter implements EntryConverter<ru.blizzed.discogsdb.mod
                 .filter(i -> i.getType().equals(type))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private Instant parseDate(ru.blizzed.discogsdb.model.release.Release source) {
+        try {
+            return LocalDate.parse(source.getReleased()).atStartOfDay().toInstant(ZoneOffset.UTC);
+        } catch (DateTimeParseException e) {
+            return ZonedDateTime.parse(source.getDateAdded()).toInstant();
+        }
     }
 }
