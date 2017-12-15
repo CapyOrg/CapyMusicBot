@@ -21,11 +21,13 @@ public class EventConverter implements EntryConverter<ru.blizzed.opensongkick.mo
         entry.setVenue(new BaseVenueConverter().convert(source.getVenue()));
         entry.setLocation(new SimpleLocationConverter().convert(source.getLocation()));
         try {
-            entry.setDate(ZonedDateTime.parse(source.getStart().getDateTime()).toInstant());
+            String date = source.getStart().getDateTime();
+            date = date == null ? source.getStart().getDate() : date;
+            entry.setDate(ZonedDateTime.parse(date).toInstant());
         } catch (DateTimeParseException e) {
             source.getStart();
             LocalDate date = LocalDate.parse(source.getStart().getDate());
-            LocalTime time = LocalTime.parse(source.getStart().getTime());
+            LocalTime time = source.getStart().getTime() == null ? LocalTime.MIDNIGHT : LocalTime.parse(source.getStart().getTime());
             entry.setDate(LocalDateTime.of(date, time).toInstant(ZoneOffset.UTC));
         }
         return entry;
