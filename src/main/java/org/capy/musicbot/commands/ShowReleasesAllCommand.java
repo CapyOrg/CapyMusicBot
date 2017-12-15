@@ -33,7 +33,7 @@ public class ShowReleasesAllCommand extends BotCommand {
         boolean hasNewReleases = false;
         Service service = ServiceContext.getService();
         StringBuilder messageBuilder = new StringBuilder();
-        List<org.capy.musicbot.entities.Artist> subscribes = MongoManager.getInstance().getSubscribesList(user.getId());
+        List<org.capy.musicbot.entities.Artist> subscribes = MongoManager.getInstance().getUserSubscribesList(user.getId());
         if (!subscribes.isEmpty()) {
             for (int i = 0; i < subscribes.size(); i++) {
                 String artistName = subscribes.get(i).getName();

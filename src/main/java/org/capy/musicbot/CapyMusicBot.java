@@ -13,6 +13,7 @@ import static org.capy.musicbot.BotHelper.sendMessageToUser;
  * Created by enableee on 10.12.17.
  */
 public class CapyMusicBot extends TelegramLongPollingBot {
+    private static CapyMusicBot instance;
     private static final String START_COMMAND = "/start";
     private static final String HELP_COMMAND = "/help";
     private static final String ADD_COMMAND = "/add";
@@ -24,6 +25,14 @@ public class CapyMusicBot extends TelegramLongPollingBot {
     private static final String SHOW_SUBSCRIBES_LIST_COMMAND = "/show_subscribes_list";
     private static final String SET_LOCATION_COMMAND = "/set_location";
     private static final String SHOW_EVENTS_COMMAND = "/show_events";
+
+    public static CapyMusicBot getInstance() {
+        final CapyMusicBot currentInstance;
+        if (instance == null)
+            instance = new CapyMusicBot();
+        currentInstance = instance;
+        return currentInstance;
+    }
 
     @Override
     public void onUpdateReceived(Update update) {

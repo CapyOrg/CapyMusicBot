@@ -175,10 +175,16 @@ public class MongoManager implements DBManager{
         return results;
     }
 
-    public List<Artist> getSubscribesList(long id) {
+    public List<Artist> getUserSubscribesList(long id) {
         Query<User> query = datastore.createQuery(User.class);
         User user = query.field("_id").equal(id).get();
         return user.getSubscribes();
+    }
+
+    public List<User> getArtistSubscribersList(String mbid) {
+        Query<Artist> query = datastore.createQuery(Artist.class);
+        Artist artist = query.field("_id").equal(mbid).get();
+        return artist.getSubscribers();
     }
 
     public boolean isUserSubscribedOnArtist(long id, String mbid) {

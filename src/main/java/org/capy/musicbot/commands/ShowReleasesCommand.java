@@ -19,9 +19,7 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.capy.musicbot.BotHelper.createKeyboardWithSubscribesList;
-import static org.capy.musicbot.BotHelper.sendMessageToUser;
-import static org.capy.musicbot.BotHelper.sendMessageWithKeyboardToUser;
+import static org.capy.musicbot.BotHelper.*;
 
 /**
  * Created by enableee on 11.12.17.
@@ -43,7 +41,7 @@ public class ShowReleasesCommand extends BotCommand {
     public void execute(AbsSender absSender, User user) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
         StringBuilder messageBuilder = new StringBuilder();
-        List<Artist> subscribes = MongoManager.getInstance().getSubscribesList(user.getId());
+        List<Artist> subscribes = MongoManager.getInstance().getUserSubscribesList(user.getId());
         if (phase == FIRST_PHASE) {
             messageBuilder
                     .append("Please, press at the button with the name of the artist, ")

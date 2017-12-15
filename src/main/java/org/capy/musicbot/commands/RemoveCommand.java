@@ -10,9 +10,7 @@ import org.telegram.telegrambots.bots.AbsSender;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.capy.musicbot.BotHelper.sendMessageToUser;
-import static org.capy.musicbot.BotHelper.sendMessageWithKeyboardToUser;
-import static org.capy.musicbot.BotHelper.createKeyboardWithSubscribesList;
+import static org.capy.musicbot.BotHelper.*;
 
 /**
  * Created by enableee on 11.12.17.
@@ -32,7 +30,7 @@ public class RemoveCommand extends BotCommand {
     @Override
     public void execute(AbsSender absSender, User user) {
         StringBuilder messageBuilder = new StringBuilder();
-        List<Artist> subscribes = MongoManager.getInstance().getSubscribesList(user.getId());
+        List<Artist> subscribes = MongoManager.getInstance().getUserSubscribesList(user.getId());
         if (phase == FIRST_PHASE) {
             ReplyKeyboardMarkup replyKeyboardMarkup;
             if (subscribes.size() != 0) {
@@ -70,7 +68,7 @@ public class RemoveCommand extends BotCommand {
                 messageBuilder
                         .append("Something went wrong. Please, try again.");
                 ReplyKeyboardMarkup replyKeyboardMarkup =
-                        createKeyboardWithSubscribesList(MongoManager.getInstance().getSubscribesList(user.getId()));
+                        createKeyboardWithSubscribesList(MongoManager.getInstance().getUserSubscribesList(user.getId()));
                 sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
                 MongoManager.getInstance().updateCommandState(user.getId(), this);
             }

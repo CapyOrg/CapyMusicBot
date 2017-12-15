@@ -37,7 +37,7 @@ public class ShowEventsCommand extends BotCommand {
         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
         StringBuilder messageBuilder = new StringBuilder();
         MongoManager mongoManager = MongoManager.getInstance();
-        List<Artist> subscribes = mongoManager.getSubscribesList(user.getId());
+        List<Artist> subscribes = mongoManager.getUserSubscribesList(user.getId());
         if (phase == FIRST_PHASE) {
             messageBuilder
                     .append("Please, press at the button with the name of the artist, ")
