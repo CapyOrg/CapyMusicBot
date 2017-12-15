@@ -1,6 +1,7 @@
 package org.capy.musicbot.entities;
 
 import org.capy.musicbot.service.entries.Event;
+import org.capy.musicbot.service.entries.Release;
 import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
@@ -22,6 +23,9 @@ public class Artist {
 
     @Embedded
     private Event lastEvent;
+
+    @Embedded
+    private Release lastRelease;
 
     private long discogsId;
 
@@ -59,6 +63,16 @@ public class Artist {
 
     public Event getLastEvent() {
         return lastEvent;
+    }
+
+    public Release getLastRelease() {
+        return lastRelease;
+    }
+
+    public org.capy.musicbot.service.entries.Artist toServiceArtist() {
+        org.capy.musicbot.service.entries.Artist artist = new org.capy.musicbot.service.entries.Artist(getName(), getMbid());
+        artist.setDiscogsId(getDiscogsId());
+        return artist;
     }
 
     @Override

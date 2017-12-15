@@ -1,5 +1,6 @@
 package org.capy.musicbot.updater;
 
+import org.capy.musicbot.service.Service;
 import org.capy.musicbot.service.ServiceException;
 
 import java.util.ArrayList;
@@ -15,13 +16,16 @@ import java.util.Objects;
  */
 public abstract class Updater<UpdateType, Source> {
 
-    protected static final int TIME_OUT = 1000;
-
     public interface Listener<UpdateType, Source> {
         void onUpdatesReceived(Source source, List<UpdateType> updates);
     }
 
-    public Updater() {
+    protected long timeout;
+    protected Service service;
+
+    public Updater(Service service, long timeout) {
+        this.timeout = timeout;
+        this.service = service;
         listeners = new ArrayList<>();
     }
 
@@ -31,6 +35,7 @@ public abstract class Updater<UpdateType, Source> {
         for (Source source : sources) {
             List<UpdateType> updates = getUpdates(source);
             if (!updates.isEmpty()) notifyListeners(source, updates);
+            takeTimeout();
         }
     }
 
@@ -45,6 +50,14 @@ public abstract class Updater<UpdateType, Source> {
     }
 
     protected abstract List<UpdateType> getUpdates(Source source) throws ServiceException;
+
+    protected void takeTimeout() {
+        try {
+            Thread.sleep(timeout);
+        } catch(InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+    }
 
     private void notifyListeners(Source source, final List<UpdateType> updates) {
         listeners.stream()
