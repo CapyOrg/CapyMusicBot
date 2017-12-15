@@ -1,5 +1,7 @@
 package org.capy.musicbot.entities;
 
+import org.capy.musicbot.service.entries.Event;
+import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.Reference;
@@ -17,6 +19,9 @@ public class Artist {
     @Id
     private String mbid;
     private String name;
+
+    @Embedded
+    private Event lastEvent;
 
     private long discogsId;
 
@@ -50,6 +55,10 @@ public class Artist {
 
     public List<User> getSubscribers() {
         return subscribers;
+    }
+
+    public Event getLastEvent() {
+        return lastEvent;
     }
 
     @Override

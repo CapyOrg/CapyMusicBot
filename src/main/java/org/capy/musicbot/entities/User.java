@@ -8,7 +8,9 @@ import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.Reference;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by enableee on 10.12.17.
@@ -30,6 +32,9 @@ public class User {
 
     @Reference
     private List<Artist> subscribes = new ArrayList<>();
+
+    @Embedded
+    private Map<String, Long> lastShownEvents = new HashMap<>();
 
     @Embedded
     private List<BotCommand> commands = new ArrayList<>(); //list of unfinished commands
@@ -83,6 +88,14 @@ public class User {
             return commands.get(commands.size() - 1);
         else
             return null;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public Map<String, Long> getLastShownEvents() {
+        return lastShownEvents;
     }
 
     @Override
