@@ -1,5 +1,8 @@
 package org.capy.musicbot.entities;
 
+import org.capy.musicbot.service.entries.Event;
+import org.capy.musicbot.service.entries.Release;
+import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.Reference;
@@ -13,10 +16,18 @@ import java.util.List;
 
 @Entity(value = "artists")
 public class Artist {
+
     @Id
     private String mbid;
-
     private String name;
+
+    @Embedded
+    private Event lastEvent;
+
+    @Embedded
+    private Release lastRelease;
+
+    private long discogsId;
 
     @Reference
     private List<User> subscribers = new ArrayList<>();
@@ -28,6 +39,12 @@ public class Artist {
         this.name = artistName;
     }
 
+    public Artist(org.capy.musicbot.service.entries.Artist artist) {
+        this.mbid = artist.getMbid();
+        this.name = artist.getName();
+        this.discogsId = artist.getDiscogsId();
+    }
+
     public String getMbid() {
         return mbid;
     }
@@ -36,14 +53,35 @@ public class Artist {
             return name;
         }
 
+    public long getDiscogsId() {
+        return discogsId;
+    }
+
     public List<User> getSubscribers() {
         return subscribers;
+    }
+
+    public Event getLastEvent() {
+        return lastEvent;
+    }
+
+    public Release getLastRelease() {
+        return lastRelease;
+    }
+
+    public org.capy.musicbot.service.entries.Artist toServiceArtist() {
+        org.capy.musicbot.service.entries.Artist artist = new org.capy.musicbot.service.entries.Artist(getName(), getMbid());
+        artist.setDiscogsId(getDiscogsId());
+        return artist;
     }
 
     @Override
     public String toString() {
         return "Artist{" +
-                "name='" + name + '\'' +
+                "mbid='" + mbid + '\'' +
+                ", name='" + name + '\'' +
+                ", discogsId=" + discogsId +
+                ", subscribers=" + subscribers +
                 '}';
     }
 }

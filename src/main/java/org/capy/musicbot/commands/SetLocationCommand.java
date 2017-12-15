@@ -1,12 +1,13 @@
 package org.capy.musicbot.commands;
 
+import org.capy.musicbot.BotHelper;
 import org.capy.musicbot.database.MongoManager;
 import org.capy.musicbot.entities.User;
 import org.capy.musicbot.service.Service;
 import org.capy.musicbot.service.ServiceContext;
 import org.capy.musicbot.service.ServiceException;
-import org.capy.musicbot.service.entries.Artist;
-import org.telegram.telegrambots.api.methods.send.SendPhoto;
+import org.capy.musicbot.service.entries.Location;
+import org.telegram.telegrambots.api.methods.send.SendLocation;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.bots.AbsSender;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
@@ -14,14 +15,14 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.capy.musicbot.BotHelper.createYesOrNoKeyboard;
 import static org.capy.musicbot.BotHelper.sendMessageToUser;
 import static org.capy.musicbot.BotHelper.sendMessageWithKeyboardToUser;
-import static org.capy.musicbot.BotHelper.createYesOrNoKeyboard;
 
 /**
- * Created by enableee on 10.12.17.
+ * Created by enableee on 14.12.17.
  */
-public class AddCommand extends BotCommand {
+public class SetLocationCommand extends BotCommand {
     private int phase;
     private int iterator;
     private int iteratorMaxValue;
@@ -30,59 +31,56 @@ public class AddCommand extends BotCommand {
     private final static int SECOND_PHASE = 2;
     private final static int THIRD_PHASE = 3;
 
-    public AddCommand() {
+    public SetLocationCommand() {
         this.phase = FIRST_PHASE;
         this.iterator = 0;
         this.iteratorMaxValue = -1;
     }
 
+    @Override
     public void execute(AbsSender absSender, User user) {
         StringBuilder messageBuilder = new StringBuilder();
-        MongoManager mongoManager = MongoManager.getInstance();
         Service service = ServiceContext.getService();
-
+        MongoManager mongoManager = MongoManager.getInstance();
         if (phase == FIRST_PHASE) {
-            messageBuilder
-                    .append("Please, type in the name of the artist you want ")
-                    .append("to add to your subscribes list:");
-            sendMessageToUser(user, absSender, messageBuilder.toString());
+            messageBuilder.append("Please, type the name of the location: ");
+            BotHelper.sendMessageToUser(user, absSender, messageBuilder.toString());
             phase = SECOND_PHASE;
             mongoManager.addCommandToCommandsList(user.getId(), this);
         } else if (phase == SECOND_PHASE) {
-            String artistName = getMessagesHistory().get(0);
-            List<Artist> artists = new ArrayList<>();
-
-            //getting a list of artists that are associated with name written by user
+            String locationName = getMessagesHistory().get(0);
+            List<Location> locations = new ArrayList<>();
             try {
-                artists = service.findArtist(getMessagesHistory().get(0)).getContent();
+                locations = service.findLocation(locationName).getContent();
             } catch (ServiceException e) {
                 e.printStackTrace();
             }
 
             //max number of artists that bot could offer to user
-            iteratorMaxValue = artists.size() - 1;
+            iteratorMaxValue = locations.size() - 1;
             if (iterator <= iteratorMaxValue) {
-                String photoUrl = artists.get(iterator).getImage();
-                String description = artists.get(iterator).getShortDescription();
-                String artistFullName = artists.get(iterator).getName();
+                Location location = locations.get(iterator);
+                double latitude = location.getLatitude();
+                double longtitude = location.getLongitude();
+                String country = location.getCountry();
+                String city = location.getCity();
+
 
                 messageBuilder
-                        .append("Is that an artist you were looking for?\n\n")
-                        .append(artistFullName)
-                        .append("\n");
-
-                //removing HTML tags from description
-                if (description != null) {
-                    description.replaceAll("<[^>]*>(.*?)<[^>]*>", "");
-                    messageBuilder.append(description);
-                }
-                SendPhoto photoMessage = new SendPhoto()
+                        .append("Is that a location you meant?\n\n")
+                        .append("Country: ")
+                        .append(country)
+                        .append("\n")
+                        .append("City: ")
+                        .append(city);
+                sendMessageToUser(user, absSender, messageBuilder.toString());
+                SendLocation locationMessage = new SendLocation()
                         .setChatId(user.getChatId())
-                        .setPhoto(photoUrl)
-                        .setCaption(messageBuilder.toString());
+                        .setLatitude((float) latitude)
+                        .setLongitude((float) longtitude);
                 ReplyKeyboardMarkup replyKeyboardMarkup = createYesOrNoKeyboard();
                 try {
-                    absSender.sendPhoto(photoMessage);
+                    absSender.execute(locationMessage);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
@@ -91,34 +89,24 @@ public class AddCommand extends BotCommand {
                 mongoManager.updateCommandState(user.getId(), this);
             } else {
                 messageBuilder
-                        .append("Oops! I can't find artist you told me about. ")
-                        .append("Perhaps you typed artist's name wrong or this artist isn't ")
-                        .append("popular enough. :<");
+                        .append("Oops! I can't find the location you told me about. ")
+                        .append("Please make sure that you typed the location name correctly ")
+                        .append("and start the command again.");
                 sendMessageToUser(user, absSender, messageBuilder.toString());
                 mongoManager.finishLastCommand(user.getId());
             }
         } else if (phase == THIRD_PHASE) {
             String userAnswer = getMessagesHistory().get(getMessagesHistory().size() - 1);
             if (userAnswer.toLowerCase().equals("yes")) {
-                List<Artist> artists = new ArrayList<>();
+                List<Location> locations = new ArrayList<>();
                 try {
-                    artists = service.findArtist(getMessagesHistory().get(0)).getContent();
+                    locations = service.findLocation(getMessagesHistory().get(0)).getContent();
                 } catch (ServiceException e) {
                     e.printStackTrace();
                 }
-                try {
-                    mongoManager.addArtist(new org.capy.musicbot.entities.Artist(service
-                            .checkOutWith(artists.get(iterator))
-                            .getContent()));
-                } catch (ServiceException e) {
-                    e.printStackTrace();
-                }
-
-                mongoManager.subscribeUser(user.getId(), artists.get(iterator).getMbid());
+                mongoManager.setUserLocation(user.getId(), locations.get(iterator));
                 messageBuilder
-                        .append("I successfully added ")
-                        .append(artists.get(iterator).getName())
-                        .append(" to your subscribes list!");
+                        .append("I successfully set your location!");
                 sendMessageToUser(user, absSender, messageBuilder.toString());
                 mongoManager.finishLastCommand(user.getId());
             } else if (userAnswer.toLowerCase().equals("no")) {
@@ -132,7 +120,6 @@ public class AddCommand extends BotCommand {
                 ReplyKeyboardMarkup replyKeyboardMarkup = createYesOrNoKeyboard();
                 sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
             }
-
         }
     }
 }

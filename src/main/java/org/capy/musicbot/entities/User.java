@@ -1,14 +1,16 @@
 package org.capy.musicbot.entities;
 
-import com.sun.istack.internal.Nullable;
 import org.capy.musicbot.commands.BotCommand;
+import org.capy.musicbot.service.entries.Location;
 import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.Reference;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by enableee on 10.12.17.
@@ -25,8 +27,14 @@ public class User {
     private String lastName;
     private boolean notificationModeOn;
 
+    @Embedded
+    private Location location;
+
     @Reference
     private List<Artist> subscribes = new ArrayList<>();
+
+    @Embedded
+    private Map<String, Long> lastShownEvents = new HashMap<>();
 
     @Embedded
     private List<BotCommand> commands = new ArrayList<>(); //list of unfinished commands
@@ -80,6 +88,14 @@ public class User {
             return commands.get(commands.size() - 1);
         else
             return null;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public Map<String, Long> getLastShownEvents() {
+        return lastShownEvents;
     }
 
     @Override

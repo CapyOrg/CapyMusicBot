@@ -1,5 +1,6 @@
 package org.capy.musicbot.commands;
 
+import org.capy.musicbot.database.MongoManager;
 import org.capy.musicbot.entities.User;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.bots.AbsSender;
@@ -28,5 +29,6 @@ public class StartCommand extends BotCommand {
                 .append("your favorite artists. To see the list ")
                 .append("of available commands use /help");
         sendMessageToUser(user, absSender, messageBuilder.toString());
+        MongoManager.getInstance().addUser(user);
     }
 }

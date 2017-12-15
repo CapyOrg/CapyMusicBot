@@ -4,12 +4,14 @@ import com.mongodb.MongoClient;
 import org.capy.musicbot.commands.BotCommand;
 import org.capy.musicbot.entities.Artist;
 import org.capy.musicbot.entities.User;
+import org.capy.musicbot.service.entries.Location;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.mongodb.morphia.query.UpdateResults;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -112,6 +114,15 @@ public class MongoManager implements DBManager{
         return updateResults;
     }
 
+    public UpdateResults setUserLocation(long id, Location location) {
+        Query<User> query = datastore.createQuery(User.class);
+        UpdateOperations<User> updateOperations =
+                datastore.createUpdateOperations(User.class)
+                        .set("location", location);
+        UpdateResults updateResults = datastore.update(query.field("_id").equal(id), updateOperations);
+        return updateResults;
+    }
+
     public boolean addArtist(Artist artist) {
         if (findArtistByMbid(artist.getMbid()) == null) {
             datastore.save(artist);
@@ -131,6 +142,13 @@ public class MongoManager implements DBManager{
         Query<Artist> query = datastore.createQuery(Artist.class);
         Artist artist = query.field("name").equal(name).get();
         return artist;
+    }
+
+    public List<Artist> getArtistsList() {
+        List<Artist> artists = new ArrayList<>();
+        Query<Artist> query = datastore.createQuery(Artist.class);
+        artists = query.asList();
+        return artists;
     }
 
     public UpdateResults subscribeUser(long id, String mbid) {
@@ -157,10 +175,16 @@ public class MongoManager implements DBManager{
         return results;
     }
 
-    public List<Artist> getSubscribesList(long id) {
+    public List<Artist> getUserSubscribesList(long id) {
         Query<User> query = datastore.createQuery(User.class);
         User user = query.field("_id").equal(id).get();
         return user.getSubscribes();
+    }
+
+    public List<User> getArtistSubscribersList(String mbid) {
+        Query<Artist> query = datastore.createQuery(Artist.class);
+        Artist artist = query.field("_id").equal(mbid).get();
+        return artist.getSubscribers();
     }
 
     public boolean isUserSubscribedOnArtist(long id, String mbid) {

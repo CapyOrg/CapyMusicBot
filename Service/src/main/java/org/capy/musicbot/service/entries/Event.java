@@ -1,6 +1,7 @@
 package org.capy.musicbot.service.entries;
 
 import java.time.Instant;
+import java.util.Objects;
 
 public class Event {
 
@@ -124,5 +125,18 @@ public class Event {
                 ", id=" + id +
                 ", date=" + date +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Event event = (Event) o;
+        return id == event.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, type, name, location, uri, venue, date);
     }
 }

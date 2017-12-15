@@ -12,7 +12,6 @@ import java.util.Properties;
 
 public final class ServiceContext {
 
-    private static final String PROPERTIES_FILE = "Service/src/main/resources/service.properties";
     private static Service service;
 
     private ServiceContext() {
@@ -45,7 +44,7 @@ public final class ServiceContext {
 
         ServiceProperties() throws IOException {
             Properties properties = new Properties();
-            properties.load(new FileInputStream(new File(PROPERTIES_FILE)));
+            properties.load(new FileInputStream(new File(getClass().getClassLoader().getResource("service.properties").getFile())));
             this.lastFMApiKey = properties.getProperty("lastfm.api_key");
             this.discogsApiKey = properties.getProperty("discogs.api_key");
             this.discogsApiSecret = properties.getProperty("discogs.api_secret");

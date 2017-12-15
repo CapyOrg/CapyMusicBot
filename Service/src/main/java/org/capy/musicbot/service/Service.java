@@ -31,6 +31,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -87,26 +88,16 @@ public class Service implements ServiceApi {
 
     @Override
     public ServiceResponse<List<Release>> getLastReleases(Artist artist, Instant since) throws ServiceException {
-        ArtistReleaseConverter artistReleaseConverter = new ArtistReleaseConverter(artist);
         LocalDateTime date = LocalDateTime.ofInstant(since, ZoneId.systemDefault());
         try {
-            Page<ArtistRelease> releasesPage;
-            List<Release> releases = new ArrayList<>();
-
-            int currentPage = 1;
-            do {
-                releasesPage = getReleases(artist, currentPage);
-                releases.addAll(releasesPage.getContent()
-                        .stream()
-                        .map(artistReleaseConverter::convert)
-                        .filter(r -> r.getYear() >= date.getYear())
-                        .collect(Collectors.toList())
-                );
-                currentPage++;
-            } while (!releases.isEmpty()
-                    & releases.size() % releasesPage.getPagination().getPerPage() == 0
-                    & currentPage <= releasesPage.getPagination().getPagesCount());
-
+            List<Release> releases = fetchReleasesByYear(artist, date.getYear());
+            ReleaseConverter releaseConverter = new ReleaseConverter(artist);
+            Iterator<Release> iterator = releases.iterator();
+            while (iterator.hasNext()) {
+                Release release = iterator.next();
+                releaseConverter.join(release, getReleaseInfo(release));
+                if (release.getDate().isBefore(since)) iterator.remove();
+            }
             return new ServiceResponse<>(releases, true);
         } catch (DiscogsDBCallException | DiscogsDBErrorException e) {
             throw new ServiceException(e);
@@ -115,7 +106,22 @@ public class Service implements ServiceApi {
 
     @Override
     public ServiceResponse<List<Release>> getLastReleases(Artist artist, Release since) throws ServiceException {
-        return getLastReleases(artist, since.getDate());
+        LocalDateTime date = LocalDateTime.ofInstant(since.getDate(), ZoneId.systemDefault());
+        try {
+            List<Release> releases = fetchReleasesByYear(artist, date.getYear());
+            ReleaseConverter releaseConverter = new ReleaseConverter(artist);
+            int ind = releases.indexOf(since);
+            if (ind != -1) {
+                releases = releases.stream().limit(ind/* > 1 ? ind - 1 : 0*/).collect(Collectors.toList());
+            }
+
+            for (Release release : releases) {
+                releaseConverter.join(release, getReleaseInfo(release));
+            }
+            return new ServiceResponse<>(releases, true);
+        } catch (DiscogsDBCallException | DiscogsDBErrorException e) {
+            throw new ServiceException(e);
+        }
     }
 
     @Override
@@ -156,6 +162,27 @@ public class Service implements ServiceApi {
         }
     }
 
+    private List<Release> fetchReleasesByYear(Artist artist, int year) throws DiscogsDBCallException, DiscogsDBErrorException {
+        ArtistReleaseConverter artistReleaseConverter = new ArtistReleaseConverter(artist);
+        Page<ArtistRelease> releasesPage;
+        List<Release> releases = new ArrayList<>();
+
+        int currentPage = 1;
+        do {
+            releasesPage = getReleases(artist, currentPage);
+            releases.addAll(releasesPage.getContent()
+                    .stream()
+                    .map(artistReleaseConverter::convert)
+                    .filter(r -> r.getYear() >= year)
+                    .collect(Collectors.toList())
+            );
+            currentPage++;
+        } while (!releases.isEmpty()
+                & releases.size() % releasesPage.getPagination().getPerPage() == 0
+                & currentPage <= releasesPage.getPagination().getPagesCount());
+        return releases;
+    }
+
     private Page<ArtistRelease> getReleases(Artist artist, int page) throws DiscogsDBErrorException, DiscogsDBCallException {
         return DiscogsDBApi.getArtistReleases(
                 artist.getDiscogsId(),
@@ -166,7 +193,7 @@ public class Service implements ServiceApi {
     }
 
     private ru.blizzed.discogsdb.model.release.Release getReleaseInfo(Release release) throws DiscogsDBErrorException, DiscogsDBCallException {
-        return DiscogsDBApi.getRelease(release.getId()).execute();
+        return DiscogsDBApi.getRelease(release.getMainId() == Release.UNKNOWN_ID ? release.getId() : release.getMainId()).execute();
     }
 
 }

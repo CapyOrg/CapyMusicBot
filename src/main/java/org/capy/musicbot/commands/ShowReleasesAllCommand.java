@@ -10,6 +10,8 @@ import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.bots.AbsSender;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.Period;
 import java.util.ArrayList;
@@ -21,15 +23,17 @@ import static org.capy.musicbot.BotHelper.sendMessageToUser;
  * Created by enableee on 12.12.17.
  */
 public class ShowReleasesAllCommand extends BotCommand {
+    private static final int DAYS_AGO = 90;
     public ShowReleasesAllCommand() {
     }
 
     @Override
     public void execute(AbsSender absSender, User user) {
+        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
         boolean hasNewReleases = false;
         Service service = ServiceContext.getService();
         StringBuilder messageBuilder = new StringBuilder();
-        List<org.capy.musicbot.entities.Artist> subscribes = MongoManager.getInstance().getSubscribesList(user.getId());
+        List<org.capy.musicbot.entities.Artist> subscribes = MongoManager.getInstance().getUserSubscribesList(user.getId());
         if (!subscribes.isEmpty()) {
             for (int i = 0; i < subscribes.size(); i++) {
                 String artistName = subscribes.get(i).getName();
@@ -41,13 +45,13 @@ public class ShowReleasesAllCommand extends BotCommand {
                             .getLastReleases(service
                                             .checkOutWith(new org.capy.musicbot.service.entries.Artist(artistName, mbid))
                                             .getContent(),
-                                    Instant.now().minus(Period.ofDays(60)))
+                                    Instant.now().minus(Period.of(0, 0, DAYS_AGO)))
                             .getContent();
                 } catch (ServiceException e) {
                     e.printStackTrace();
                 }
 
-                if (!releases.isEmpty() || releases == null) {
+                if (!releases.isEmpty()) {
                     messageBuilder.append(artistName);
                     sendMessageToUser(user, absSender, messageBuilder.toString());
                     messageBuilder = new StringBuilder();
@@ -59,11 +63,15 @@ public class ShowReleasesAllCommand extends BotCommand {
                         if (release.getDate() != null)
                             messageBuilder
                                     .append("Date of release: ")
-                                    .append(release.getDate());
-                        if (release.getDcType() != null)
-                            messageBuilder
-                                    .append("Release type: ")
-                                    .append(release.getDcType());
+                                    .append(formatter.format(Date.from(release.getDate())))
+                                    .append("\n");
+                        if (release.getTypes() != null) {
+                            messageBuilder.append("Release type: ");
+                            for (Release.Type type : release.getTypes())
+                                messageBuilder
+                                        .append(type.name())
+                                        .append(" ");
+                        }
                         if (release.getImage() != null) {
                             SendPhoto photo = new SendPhoto()
                                     .setChatId(user.getChatId())
@@ -82,7 +90,8 @@ public class ShowReleasesAllCommand extends BotCommand {
                 }
                 messageBuilder = new StringBuilder();
             }
-        } else if (subscribes.isEmpty() || !hasNewReleases) {
+        }
+        if (subscribes.isEmpty() || !hasNewReleases) {
             messageBuilder
                     .append("All of artists that you are subscribed on ")
                     .append("don't have any new releases now.");
