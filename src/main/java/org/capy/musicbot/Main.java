@@ -2,15 +2,21 @@ package org.capy.musicbot;
 
 import org.capy.musicbot.database.DBConfig;
 import org.capy.musicbot.service.ServiceException;
+import org.capy.musicbot.entities.Artist;
+import org.capy.musicbot.service.entries.Event;
+import org.capy.musicbot.updater.EventsUpdater;
+import org.capy.musicbot.updater.Updater;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by enableee on 09.12.17.
  */
 public class Main {
+
     public static void main(String[] args) throws ServiceException {
         ApiContextInitializer.init();
         TelegramBotsApi botsApi = new TelegramBotsApi();
