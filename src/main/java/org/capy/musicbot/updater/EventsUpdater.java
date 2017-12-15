@@ -9,6 +9,7 @@ import org.capy.musicbot.service.entries.Location;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -26,6 +27,7 @@ public class EventsUpdater extends Updater<Event, Artist> {
     protected List<Event> getUpdates(Artist artist) throws ServiceException {
         List<Location> locations = artist.getSubscribers().stream()
                 .map(User::getLocation)
+                .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
 
