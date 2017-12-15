@@ -54,7 +54,7 @@ public abstract class Updater<UpdateType, Source> {
     protected void takeTimeout() {
         try {
             Thread.sleep(timeout);
-        } catch(InterruptedException ex) {
+        } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
     }

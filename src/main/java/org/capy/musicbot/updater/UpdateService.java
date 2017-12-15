@@ -20,27 +20,31 @@ import java.util.*;
  */
 public final class UpdateService {
 
+    public interface DataProvider {
+        List<Artist> getArtists();
+    }
+
     public enum Status {
         WORKING, STOPPED, WAITING
     }
 
     private static UpdateService instance;
+    private DataProvider dataProvider;
 
     private Status status = Status.WAITING;
 
     private Timer timer;
     private Settings settings;
 
-    private List<Artist> artists;
     private Notifier notifier;
 
-    private UpdateService(List<Artist> artists) {
-        this.artists = artists;
+    private UpdateService(DataProvider dataProvider) {
+        this.dataProvider = dataProvider;
         settings = new Settings();
     }
 
-    public static UpdateService with(List<Artist> artists) {
-        return getInstance(artists);
+    public static UpdateService with(DataProvider dataProvider) {
+        return getInstance(dataProvider);
     }
 
     public void startTracking(Notifier notifier) {
@@ -88,9 +92,9 @@ public final class UpdateService {
         return this.settings;
     }
 
-    private static UpdateService getInstance(List<Artist> artists) {
+    private static UpdateService getInstance(DataProvider dataProvider) {
         if (instance == null)
-            instance = new UpdateService(artists);
+            instance = new UpdateService(dataProvider);
         return instance;
     }
 
@@ -137,6 +141,8 @@ public final class UpdateService {
         private EventsUpdater eventsUpdater;
         private ReleasesUpdater releasesUpdater;
 
+        private List<Artist> artists;
+
         UpdateTask(Notifier notifier) {
             Service service = ServiceContext.getService();
             eventsUpdater = new EventsUpdater(service, getSettings().getTimeOut());
@@ -144,6 +150,8 @@ public final class UpdateService {
 
             eventsUpdater.addListener(new EventsListener(notifier));
             releasesUpdater.addListener(new ReleasesListener(notifier));
+
+            artists = dataProvider.getArtists();
         }
 
         @Override
