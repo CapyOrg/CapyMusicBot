@@ -23,6 +23,7 @@ public class CapyMusicBot extends TelegramLongPollingBot {
     private static final String SHOW_RELEASES_ALL_COMMAND = "/show_releases_all";
     private static final String SHOW_SUBSCRIBES_LIST_COMMAND = "/show_subscribes_list";
     private static final String SET_LOCATION_COMMAND = "/set_location";
+    private static final String SHOW_EVENTS_COMMAND = "/show_events";
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -68,6 +69,9 @@ public class CapyMusicBot extends TelegramLongPollingBot {
                     break;
                 case SET_LOCATION_COMMAND:
                     new SetLocationCommand().execute(this, user);
+                    break;
+                case SHOW_EVENTS_COMMAND:
+                    new ShowEventsCommand().execute(this, user);
                     break;
                 default:
                     StringBuilder builder = new StringBuilder();
