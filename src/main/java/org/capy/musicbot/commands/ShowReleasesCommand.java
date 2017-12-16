@@ -32,7 +32,7 @@ public class ShowReleasesCommand extends BotCommand {
     private final static int FIRST_PHASE = 1;
     private final static int SECOND_PHASE = 2;
 
-    public ShowReleasesCommand() {
+    protected ShowReleasesCommand() {
         this.phase = FIRST_PHASE;
         this.iterator = 0;
     }

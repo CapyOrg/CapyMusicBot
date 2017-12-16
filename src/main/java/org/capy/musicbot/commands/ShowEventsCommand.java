@@ -27,7 +27,7 @@ public class ShowEventsCommand extends BotCommand {
     private final static int FIRST_PHASE = 1;
     private final static int SECOND_PHASE = 2;
 
-    public ShowEventsCommand() {
+    protected ShowEventsCommand() {
         this.phase = FIRST_PHASE;
         iterator = 0;
     }

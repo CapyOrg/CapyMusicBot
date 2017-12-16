@@ -15,9 +15,7 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.capy.musicbot.BotHelper.createYesOrNoKeyboard;
-import static org.capy.musicbot.BotHelper.sendMessageToUser;
-import static org.capy.musicbot.BotHelper.sendMessageWithKeyboardToUser;
+import static org.capy.musicbot.BotHelper.*;
 
 /**
  * Created by enableee on 14.12.17.
@@ -31,7 +29,7 @@ public class SetLocationCommand extends BotCommand {
     private final static int SECOND_PHASE = 2;
     private final static int THIRD_PHASE = 3;
 
-    public SetLocationCommand() {
+    protected SetLocationCommand() {
         this.phase = FIRST_PHASE;
         this.iterator = 0;
         this.iteratorMaxValue = -1;

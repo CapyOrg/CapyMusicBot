@@ -22,7 +22,7 @@ public class RemoveCommand extends BotCommand {
     private final static int FIRST_PHASE = 1;
     private final static int SECOND_PHASE = 2;
 
-    public RemoveCommand() {
+    protected RemoveCommand() {
         this.phase = FIRST_PHASE;
         this.iterator = 0;
     }

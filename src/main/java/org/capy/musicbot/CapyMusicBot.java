@@ -1,6 +1,7 @@
 package org.capy.musicbot;
 
-import org.capy.musicbot.commands.*;
+import org.capy.musicbot.commands.BotCommand;
+import org.capy.musicbot.commands.CommandSimpleFactory;
 import org.capy.musicbot.database.MongoManager;
 import org.capy.musicbot.entities.User;
 import org.telegram.telegrambots.api.objects.Update;
@@ -14,17 +15,6 @@ import static org.capy.musicbot.BotHelper.sendMessageToUser;
  */
 public class CapyMusicBot extends TelegramLongPollingBot {
     private static CapyMusicBot instance;
-    private static final String START_COMMAND = "/start";
-    private static final String HELP_COMMAND = "/help";
-    private static final String ADD_COMMAND = "/add";
-    private static final String NOTIFICATIONS_OFF_COMMAND = "/notifications_off";
-    private static final String NOTIFICATIONS_ON_COMMAND = "/notifications_on";
-    private static final String REMOVE_COMMAND = "/remove";
-    private static final String SHOW_RELEASES_COMMAND = "/show_releases";
-    private static final String SHOW_RELEASES_ALL_COMMAND = "/show_releases_all";
-    private static final String SHOW_SUBSCRIBES_LIST_COMMAND = "/show_subscribes_list";
-    private static final String SET_LOCATION_COMMAND = "/set_location";
-    private static final String SHOW_EVENTS_COMMAND = "/show_events";
 
     public static CapyMusicBot getInstance() {
         final CapyMusicBot currentInstance;
@@ -36,7 +26,6 @@ public class CapyMusicBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
@@ -48,65 +37,27 @@ public class CapyMusicBot extends TelegramLongPollingBot {
             long id = update.getMessage().getChat().getId();
             User user = new User(id, chatId, username, firstName, lastName);
 
-            switch (messageText) {
-                case START_COMMAND:
-                    new StartCommand().execute(this, user);
-                    break;
-                case HELP_COMMAND:
-                    new HelpCommand().execute(this, user);
-                    break;
-                case ADD_COMMAND:
-                    new AddCommand().execute(this, user);
-                    break;
-                case NOTIFICATIONS_ON_COMMAND:
-                    new NotificationsOnCommand().execute(this, user);
-                    break;
-                case NOTIFICATIONS_OFF_COMMAND:
-                    new NotificationsOffCommand().execute(this, user);
-                    break;
-                case SHOW_SUBSCRIBES_LIST_COMMAND:
-                    new ShowSubscribesListCommand().execute(this, user);
-                    break;
-                case REMOVE_COMMAND:
-                    new RemoveCommand().execute(this, user);
-                    break;
-                case SHOW_RELEASES_COMMAND:
-                    new ShowReleasesCommand().execute(this, user);
-                    break;
-                case SHOW_RELEASES_ALL_COMMAND:
-                    new ShowReleasesAllCommand().execute(this, user);
-                    break;
-                case SET_LOCATION_COMMAND:
-                    new SetLocationCommand().execute(this, user);
-                    break;
-                case SHOW_EVENTS_COMMAND:
-                    new ShowEventsCommand().execute(this, user);
-                    break;
-                default:
-                    StringBuilder builder = new StringBuilder();
-                    if (messageText.startsWith("/")) {
-                        builder.append("I don't know this command. Please, use one of" +
-                                "available commands.\n" +
-                                "To see the list of available commands use /help");
-                        sendMessageToUser(user, this, builder.toString());
+            BotCommand command = new CommandSimpleFactory().createCommand(messageText);
+            if (command != null)
+                command.execute(this, user);
+            else {
+                StringBuilder builder = new StringBuilder();
+                if (messageText.startsWith("/")) {
+                    builder.append("I don't know this command. Please, use one of" +
+                            "available commands.\n" +
+                            "To see the list of available commands use /help");
+                    sendMessageToUser(user, this, builder.toString());
+                } else {
+                    user = MongoManager.getInstance().findUser(id);
+                    if (user != null && !user.getCommands().isEmpty()) {
+                        user.getCurrentCommand().addMessage(messageText);
+                        user.getCurrentCommand().execute(this, user);
                     } else {
-                        user = MongoManager.getInstance().findUser(id);
-                        if (user != null) {
-                            if (user.getCommands().isEmpty()) {
-
-                                builder.append("Please, use any command to start working with bot.\n")
-                                        .append("To see the list of available commands use /help");
-                                sendMessageToUser(user, this, builder.toString());
-                            } else {
-                                user.getCurrentCommand().addMessage(messageText);
-                                user.getCurrentCommand().execute(this, user);
-                            }
-                        } else {
-                            builder.append("Please, use any command to start working with bot.\n")
-                                    .append("To see the list of available commands use /help");
-                            sendMessageToUser(user, this, builder.toString());
-                        }
+                        builder.append("Please, use any command to start working with bot.\n")
+                                .append("To see the list of available commands use /help");
+                        sendMessageToUser(user, this, builder.toString());
                     }
+                }
             }
         }
     }

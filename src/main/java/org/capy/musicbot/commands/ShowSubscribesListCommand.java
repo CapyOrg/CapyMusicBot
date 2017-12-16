@@ -13,7 +13,7 @@ import static org.capy.musicbot.BotHelper.sendMessageToUser;
  * Created by enableee on 11.12.17.
  */
 public class ShowSubscribesListCommand extends BotCommand {
-    public ShowSubscribesListCommand() {
+    protected ShowSubscribesListCommand() {
     }
 
     @Override
