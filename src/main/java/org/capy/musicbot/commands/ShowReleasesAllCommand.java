@@ -24,7 +24,9 @@ import static org.capy.musicbot.BotHelper.sendMessageToUser;
  */
 public class ShowReleasesAllCommand extends BotCommand {
     private static final int DAYS_AGO = 90;
-    public ShowReleasesAllCommand() {
+
+    protected ShowReleasesAllCommand() {
+
     }
 
     @Override

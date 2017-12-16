@@ -9,7 +9,7 @@ import static org.capy.musicbot.BotHelper.sendMessageToUser;
  * Created by enableee on 10.12.17.
  */
 public class HelpCommand extends BotCommand {
-    public HelpCommand() {
+    protected HelpCommand() {
     }
 
     @Override
