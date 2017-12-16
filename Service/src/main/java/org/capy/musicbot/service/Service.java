@@ -16,12 +16,15 @@ import ru.blizzed.discogsdb.params.SortOrderParam;
 import ru.blizzed.discogsdb.params.SortParam;
 import ru.blizzed.openlastfm.ApiRequestException;
 import ru.blizzed.openlastfm.ApiResponseException;
+import ru.blizzed.openlastfm.OpenLastFMContext;
 import ru.blizzed.openlastfm.methods.ApiArtist;
 import ru.blizzed.openlastfm.methods.ApiResponse;
+import ru.blizzed.openlastfm.methods.ApiUser;
 import ru.blizzed.openlastfm.models.SearchResult;
 import ru.blizzed.openlastfm.models.artist.ArtistInfo;
 import ru.blizzed.openlastfm.models.artist.FoundArtist;
 import ru.blizzed.openlastfm.params.LastFMParams;
+import ru.blizzed.openlastfm.params.Period;
 import ru.blizzed.opensongkick.ApiCallException;
 import ru.blizzed.opensongkick.ApiErrorException;
 import ru.blizzed.opensongkick.SongKickApi;
@@ -158,6 +161,28 @@ public class Service implements ServiceApi {
                     .collect(Collectors.toList());
             return new ServiceResponse<>(locations, true);
         } catch (ApiCallException | ApiErrorException e) {
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public ServiceResponse<List<Artist>> getLastFmUserArtists(String lastFmUsername, int page, int perPage) throws ServiceException {
+        try {
+            ArtistConverter converter = new ArtistConverter();
+            List<Artist> artists = ApiUser.getTopArtists().withParams(
+                    LastFMParams.PERIOD.of(Period.TWELVE_MONTHS),
+                    LastFMParams.USER.of(lastFmUsername),
+                    LastFMParams.PAGE.of(page),
+                    LastFMParams.LIMIT.of(perPage)
+            ).execute()
+                    .getContent()
+                    .getItems()
+                    .stream()
+                    .map(converter::convert)
+                    .filter(a -> !a.getMbid().isEmpty())
+                    .collect(Collectors.toList());
+            return new ServiceResponse<>(artists, true);
+        } catch (ApiResponseException | ApiRequestException e) {
             throw new ServiceException(e);
         }
     }

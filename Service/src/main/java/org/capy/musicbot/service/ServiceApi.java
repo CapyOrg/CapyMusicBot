@@ -76,4 +76,15 @@ public interface ServiceApi {
      */
     ServiceResponse<List<Location>> findLocation(String query) throws ServiceException;
 
+    /**
+     * Gives user's artists by his LastFM username
+     *
+     * @param lastFmUsername user's login in LastFM service
+     * @param page the page number to fetch
+     * @param perPage the number of results to fetch per page
+     * @return {@link ServiceResponse} with {@link List} of user's artists
+     * @throws ServiceException if something went wrong
+     */
+    ServiceResponse<List<Artist>> getLastFmUserArtists(String lastFmUsername, int page, int perPage) throws ServiceException;
+
 }
