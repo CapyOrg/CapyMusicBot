@@ -51,6 +51,10 @@ public class User {
         this.notificationModeOn = true;
     }
 
+    public void addShownEvent(String mbid, Long eventId) {
+        lastShownEvents.put(mbid, eventId);
+    }
+
     public String getUsername() {
         return username;
     }

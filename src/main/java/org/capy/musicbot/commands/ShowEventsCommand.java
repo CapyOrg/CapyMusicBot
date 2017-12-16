@@ -79,6 +79,8 @@ public class ShowEventsCommand extends BotCommand {
                                 .append(event.getUri());
                         sendMessageToUser(user, absSender, messageBuilder.toString());
                         messageBuilder = new StringBuilder();
+                        user.addShownEvent(mbid, event.getId());
+                        mongoManager.updateUserState(user);
                     }
                 } else {
                     messageBuilder

@@ -69,6 +69,11 @@ public class MongoManager implements DBManager{
             return false;
     }
 
+    public boolean updateUserState(User user) {
+        dropUser(user.getId());
+        return addUser(user);
+    }
+
     public UpdateResults addCommandToCommandsList(long id, BotCommand command) {
         Query<User> query = datastore.createQuery(User.class);
         UpdateOperations<User> updateOperations =
