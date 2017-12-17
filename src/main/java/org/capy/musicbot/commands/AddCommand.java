@@ -12,6 +12,7 @@ import org.telegram.telegrambots.bots.AbsSender;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.capy.musicbot.BotHelper.*;
@@ -41,44 +42,20 @@ public class AddCommand extends BotCommand {
 
         if (phase == FIRST_PHASE) {
             messageBuilder
-                    .append("Please, type in the name of the artist you want ")
-                    .append("to add to your subscribes list:");
+                    .append("Please, type in the name of the artist you want to add to your subscribes list:");
             sendMessageToUser(user, absSender, messageBuilder.toString());
             phase = SECOND_PHASE;
             mongoManager.addCommandToCommandsList(user.getId(), this);
         } else if (phase == SECOND_PHASE) {
             String artistName = getMessagesHistory().get(0);
-            List<Artist> artists = new ArrayList<>();
-
-            //getting a list of artists that are associated with name written by user
-            try {
-                artists = service.findArtist(getMessagesHistory().get(0)).getContent();
-            } catch (ServiceException e) {
-                e.printStackTrace();
-            }
+            List<Artist> artists = getArtistsOfferList(artistName);
 
             //max number of artists that bot could offer to user
             iteratorMaxValue = artists.size() - 1;
             if (iterator <= iteratorMaxValue) {
-                String photoUrl = artists.get(iterator).getImage();
-                String description = artists.get(iterator).getShortDescription();
-                String artistFullName = artists.get(iterator).getName();
-
-                messageBuilder
-                        .append("Is that an artist you were looking for?\n\n")
-                        .append(artistFullName)
-                        .append("\n");
-
-                //removing HTML tags from description
-                if (description != null) {
-                    description.replaceAll("<[^>]*>(.*?)<[^>]*>", "");
-                    messageBuilder.append(description);
-                }
-                SendPhoto photoMessage = new SendPhoto()
-                        .setChatId(user.getChatId())
-                        .setPhoto(photoUrl)
-                        .setCaption(messageBuilder.toString());
-                ReplyKeyboardMarkup replyKeyboardMarkup = createYesOrNoKeyboard();
+                SendPhoto photoMessage = createArtistOfferMessage(user, artists, iterator);
+                String[] yesOrNo = {"Yes", "No"};
+                ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboard(new ArrayList<String>(Arrays.asList(yesOrNo)), true, true);
                 try {
                     absSender.sendPhoto(photoMessage);
                 } catch (TelegramApiException e) {
@@ -96,14 +73,10 @@ public class AddCommand extends BotCommand {
                 mongoManager.finishLastCommand(user.getId());
             }
         } else if (phase == THIRD_PHASE) {
+            String artistName = getMessagesHistory().get(0);
             String userAnswer = getMessagesHistory().get(getMessagesHistory().size() - 1);
             if (userAnswer.toLowerCase().equals("yes")) {
-                List<Artist> artists = new ArrayList<>();
-                try {
-                    artists = service.findArtist(getMessagesHistory().get(0)).getContent();
-                } catch (ServiceException e) {
-                    e.printStackTrace();
-                }
+                List<Artist> artists = getArtistsOfferList(artistName);
                 try {
                     mongoManager.addArtist(new org.capy.musicbot.entities.Artist(service
                             .checkOutWith(artists.get(iterator))
@@ -127,10 +100,45 @@ public class AddCommand extends BotCommand {
             } else {
                 messageBuilder
                         .append("Please, press \"yes\" or \"no\".");
-                ReplyKeyboardMarkup replyKeyboardMarkup = createYesOrNoKeyboard();
+                String[] yesOrNo = {"Yes", "No"};
+                ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboard(new ArrayList<String>(Arrays.asList(yesOrNo)), true, true);
                 sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
             }
-
         }
+    }
+
+    private static List<Artist> getArtistsOfferList(String artistName) {
+        Service service = ServiceContext.getService();
+        List<Artist> artists = new ArrayList<>();
+
+        //getting a list of artists that are associated with name written by user
+        try {
+            artists = service.findArtist(artistName).getContent();
+        } catch (ServiceException e) {
+            e.printStackTrace();
+        }
+        return artists;
+    }
+
+    private static SendPhoto createArtistOfferMessage(User user, List<Artist> artists, int i) {
+        StringBuilder messageBuilder = new StringBuilder();
+        String photoUrl = artists.get(i).getImage();
+        String description = artists.get(i).getShortDescription();
+        String artistFullName = artists.get(i).getName();
+
+        messageBuilder
+                .append("Is that an artist you were looking for?\n\n")
+                .append(artistFullName)
+                .append("\n");
+
+        //removing HTML tags from description
+        if (description != null) {
+            description.replaceAll("<[^>]*>(.*?)<[^>]*>", "");
+            messageBuilder.append(description);
+        }
+        return new SendPhoto()
+                .setChatId(user.getChatId())
+                .setPhoto(photoUrl)
+                .setCaption(messageBuilder.toString());
     }
 }

@@ -15,6 +15,30 @@ import java.util.List;
  * Created by enableee on 13.12.17.
  */
 public class BotHelper {
+    public static ReplyKeyboardMarkup createKeyboard(List<String> buttonsText, boolean resizeKeyboard, boolean oneTimeKeyboard) {
+        StringBuilder buttonTextBuilder = new StringBuilder();
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> buttons = new ArrayList<>();
+        KeyboardRow buttonRow = new KeyboardRow();
+        int i = 0;
+
+        for (String text : buttonsText) {
+            buttonTextBuilder.append(text);
+            buttonRow.add(buttonTextBuilder.toString());
+            if (i % 2 == 0) {
+                buttons.add(buttonRow);
+                buttonRow = new KeyboardRow();
+            } else if (i == buttonsText.size())
+                buttons.add(buttonRow);
+            buttonTextBuilder = new StringBuilder();
+        }
+        replyKeyboardMarkup.setResizeKeyboard(resizeKeyboard);
+        replyKeyboardMarkup.setOneTimeKeyboard(oneTimeKeyboard);
+        replyKeyboardMarkup.setKeyboard(buttons);
+
+        return replyKeyboardMarkup;
+    }
+
     public static ReplyKeyboardMarkup createKeyboardWithSubscribesList(List<Artist> subscribes) {
         StringBuilder buttonTextBuilder = new StringBuilder();
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
