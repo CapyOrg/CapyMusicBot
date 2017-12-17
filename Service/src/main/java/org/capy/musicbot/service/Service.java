@@ -17,6 +17,7 @@ import ru.blizzed.discogsdb.params.SortParam;
 import ru.blizzed.openlastfm.ApiRequestException;
 import ru.blizzed.openlastfm.ApiResponseException;
 import ru.blizzed.openlastfm.OpenLastFMContext;
+import ru.blizzed.openlastfm.errors.LastFMErrors;
 import ru.blizzed.openlastfm.methods.ApiArtist;
 import ru.blizzed.openlastfm.methods.ApiResponse;
 import ru.blizzed.openlastfm.methods.ApiUser;
@@ -166,7 +167,7 @@ public class Service implements ServiceApi {
     }
 
     @Override
-    public ServiceResponse<List<Artist>> getLastFmUserArtists(String lastFmUsername, int page, int perPage) throws ServiceException {
+    public ServiceResponse<List<Artist>> getLastFmUserArtists(String lastFmUsername, int page, int perPage) throws ServiceException, InvalidUsernameException {
         try {
             ArtistConverter converter = new ArtistConverter();
             List<Artist> artists = ApiUser.getTopArtists().withParams(
@@ -182,7 +183,11 @@ public class Service implements ServiceApi {
                     .filter(a -> !a.getMbid().isEmpty())
                     .collect(Collectors.toList());
             return new ServiceResponse<>(artists, true);
-        } catch (ApiResponseException | ApiRequestException e) {
+        } catch (ApiResponseException e) {
+            if (e.getErrorResponse().getContent().getError() == LastFMErrors.INVALID_PARAMS.getCode())
+                throw new InvalidUsernameException(String.format("Username %s is not found on LastFM service", lastFmUsername));
+            else throw new ServiceException(e);
+        } catch (ApiRequestException e) {
             throw new ServiceException(e);
         }
     }
