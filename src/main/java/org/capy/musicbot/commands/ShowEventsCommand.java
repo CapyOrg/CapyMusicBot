@@ -34,71 +34,71 @@ public class ShowEventsCommand extends MultiphaseBotCommand {
         StringBuilder messageBuilder = new StringBuilder();
         MongoManager mongoManager = MongoManager.getInstance();
         List<Artist> subscribes = mongoManager.getUserSubscribesList(user.getId());
-        if (getCurrentPhase() == FIRST_PHASE) {
+        switch (getCurrentPhase()) {
+            case FIRST_PHASE:
+                if (mongoManager.findUser(user.getId()).getLocation() != null) {
+                    messageBuilder
+                            .append("Please, press at the button with the name of the artist, ")
+                            .append("whose events you want to get.");
 
-            if (mongoManager.findUser(user.getId()).getLocation() != null) {
-                messageBuilder
-                        .append("Please, press at the button with the name of the artist, ")
-                        .append("whose events you want to get.");
-
-                ReplyKeyboardMarkup replyKeyboardMarkup;
-                replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
-                setCurrentPhase(SECOND_PHASE);
-                return (queryIsExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
-                        sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
-            } else {
-                messageBuilder
-                        .append("You should firstly set your location by using /set_location command");
-                return sendMessageToUser(user, absSender, messageBuilder.toString());
-            }
-
-        } else if (getCurrentPhase() == SECOND_PHASE) {
-            Service service = ServiceContext.getService();
-            String userAnswer = getMessagesHistory().get(getIterator());
-            String artistNumber = userAnswer.split("\\.")[0];
-            if ((artistNumber.matches("^[0-9]+$")) &&
-                    (Integer.parseInt(artistNumber) > 0) &&
-                    (Integer.parseInt(artistNumber) <= subscribes.size())) {
-                String mbid = subscribes.get(Integer.parseInt(artistNumber) - 1).getMbid();
-                String artistName = subscribes.get(Integer.parseInt(artistNumber) - 1).getName();
-                List<Event> events = service
+                    ReplyKeyboardMarkup replyKeyboardMarkup;
+                    replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
+                    setCurrentPhase(SECOND_PHASE);
+                    return (queryIsExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
+                } else {
+                    messageBuilder
+                            .append("You should firstly set your location by using /set_location command");
+                    return sendMessageToUser(user, absSender, messageBuilder.toString());
+                }
+            case SECOND_PHASE:
+                Service service = ServiceContext.getService();
+                String userAnswer = getMessagesHistory().get(getIterator());
+                String artistNumber = userAnswer.split("\\.")[0];
+                if ((artistNumber.matches("^[0-9]+$")) &&
+                        (Integer.parseInt(artistNumber) > 0) &&
+                        (Integer.parseInt(artistNumber) <= subscribes.size())) {
+                    String mbid = subscribes.get(Integer.parseInt(artistNumber) - 1).getMbid();
+                    String artistName = subscribes.get(Integer.parseInt(artistNumber) - 1).getName();
+                    List<Event> events = service
                             .getEvents(service
                                             .checkOutWith(new org.capy.musicbot.service.entries.Artist(artistName, mbid))
                                             .getContent(),
                                     mongoManager.findUser(user.getId()).getLocation()).getContent();
 
-                if (!events.isEmpty()) {
-                    for (Event event : events) {
+                    if (!events.isEmpty()) {
+                        for (Event event : events) {
+                            messageBuilder
+                                    .append(event.getName())
+                                    .append("\n")
+                                    .append(formatter.format(Date.from(event.getDate())))
+                                    .append("\n")
+                                    .append(event.getUri());
+                            sendMessageToUser(user, absSender, messageBuilder.toString());
+                            messageBuilder = new StringBuilder();
+                            user.addShownEvent(mbid, event.getId());
+                            mongoManager.updateUserState(user);
+                        }
+                    } else {
                         messageBuilder
-                                .append(event.getName())
-                                .append("\n")
-                                .append(formatter.format(Date.from(event.getDate())))
-                                .append("\n")
-                                .append(event.getUri());
+                                .append("This artist has no events in the near future.");
                         sendMessageToUser(user, absSender, messageBuilder.toString());
-                        messageBuilder = new StringBuilder();
-                        user.addShownEvent(mbid, event.getId());
-                        mongoManager.updateUserState(user);
                     }
+                    return (queryIsExecuted(mongoManager.finishLastCommand(user.getId())));
                 } else {
+                    setIterator(getIterator() + 1);
                     messageBuilder
-                            .append("This artist has no events in the near future.");
-                    sendMessageToUser(user, absSender, messageBuilder.toString());
+                            .append("Something went wrong.\n")
+                            .append("Please, press at the button with the name of the artist, ")
+                            .append("releases of which you want to get.");
+                    ReplyKeyboardMarkup replyKeyboardMarkup;
+                    replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
+                    return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
                 }
-                return (queryIsExecuted(mongoManager.finishLastCommand(user.getId())));
-            } else {
-                setIterator(getIterator() + 1);
-                messageBuilder
-                        .append("Something went wrong.\n")
-                        .append("Please, press at the button with the name of the artist, ")
-                        .append("releases of which you want to get.");
-                ReplyKeyboardMarkup replyKeyboardMarkup;
-                replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
-                return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
-                        sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
-            }
+            default:
+                return false;
         }
-        return false;
     }
 
 }

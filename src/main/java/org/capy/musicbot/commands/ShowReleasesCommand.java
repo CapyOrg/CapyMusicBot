@@ -39,83 +39,83 @@ public class ShowReleasesCommand extends MultiphaseBotCommand {
         StringBuilder messageBuilder = new StringBuilder();
         MongoManager mongoManager = MongoManager.getInstance();
         List<Artist> subscribes = mongoManager.getUserSubscribesList(user.getId());
-        if (getCurrentPhase() == FIRST_PHASE) {
-            messageBuilder
-                    .append("Please, press at the button with the name of the artist, ")
-                    .append("whose releases you want to get.");
-
-            ReplyKeyboardMarkup replyKeyboardMarkup;
-            replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
-            setCurrentPhase(SECOND_PHASE);
-            return (queryIsExecuted(MongoManager.getInstance().addCommandToCommandsList(user.getId(), this)) &&
-                    sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
-        } else if (getCurrentPhase() == SECOND_PHASE) {
-            Service service = ServiceContext.getService();
-            String userAnswer = getMessagesHistory().get(getIterator());
-            String artistNumber = userAnswer.split("\\.")[0];
-            if ((artistNumber.matches("^[0-9]+$")) &&
-                    (Integer.parseInt(artistNumber) > 0) &&
-                    (Integer.parseInt(artistNumber) <= subscribes.size())) {
-                String mbid = subscribes.get(Integer.parseInt(artistNumber) - 1).getMbid();
-                String artistName = subscribes.get(Integer.parseInt(artistNumber) - 1).getName();
-                List<Release> releases = service
+        ReplyKeyboardMarkup replyKeyboardMarkup;
+        switch (getCurrentPhase()) {
+            case FIRST_PHASE:
+                messageBuilder
+                        .append("Please, press at the button with the name of the artist, ")
+                        .append("whose releases you want to get.");
+                replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
+                setCurrentPhase(SECOND_PHASE);
+                return (queryIsExecuted(MongoManager.getInstance().addCommandToCommandsList(user.getId(), this)) &&
+                        sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
+            case SECOND_PHASE:
+                Service service = ServiceContext.getService();
+                String userAnswer = getMessagesHistory().get(getIterator());
+                String artistNumber = userAnswer.split("\\.")[0];
+                if ((artistNumber.matches("^[0-9]+$")) &&
+                        (Integer.parseInt(artistNumber) > 0) &&
+                        (Integer.parseInt(artistNumber) <= subscribes.size())) {
+                    String mbid = subscribes.get(Integer.parseInt(artistNumber) - 1).getMbid();
+                    String artistName = subscribes.get(Integer.parseInt(artistNumber) - 1).getName();
+                    List<Release> releases = service
                             .getLastReleases(service
                                             .checkOutWith(new org.capy.musicbot.service.entries.Artist(artistName, mbid))
                                             .getContent(),
                                     Instant.now().minus(Period.of(0, 0, DAYS_AGO)))
                             .getContent();
 
-                if (!releases.isEmpty()) {
-                    for (Release release : releases) {
-                        messageBuilder
-                                .append(release.getTitle())
-                                .append("\n");
-                        if (release.getDate() != null)
+                    if (!releases.isEmpty()) {
+                        for (Release release : releases) {
                             messageBuilder
-                                    .append("Date of release: ")
-                                    .append(formatter.format(Date.from(release.getDate())))
+                                    .append(release.getTitle())
                                     .append("\n");
-                        if (release.getTypes() != null) {
-                            messageBuilder.append("Release type: ");
-                            for (Release.Type type : release.getTypes())
+                            if (release.getDate() != null)
                                 messageBuilder
-                                        .append(type.name())
-                                        .append(" ");
-                        }
-                        if (release.getImage() != null) {
-                            SendPhoto photo = new SendPhoto()
-                                    .setChatId(user.getChatId())
-                                    .setPhoto(release.getImage())
-                                    .setCaption(messageBuilder.toString());
-                            try {
-                                absSender.sendPhoto(photo);
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
+                                        .append("Date of release: ")
+                                        .append(formatter.format(Date.from(release.getDate())))
+                                        .append("\n");
+                            if (release.getTypes() != null) {
+                                messageBuilder.append("Release type: ");
+                                for (Release.Type type : release.getTypes())
+                                    messageBuilder
+                                            .append(type.name())
+                                            .append(" ");
                             }
-                        } else {
-                            return sendMessageToUser(user, absSender, messageBuilder.toString());
+                            if (release.getImage() != null) {
+                                SendPhoto photo = new SendPhoto()
+                                        .setChatId(user.getChatId())
+                                        .setPhoto(release.getImage())
+                                        .setCaption(messageBuilder.toString());
+                                try {
+                                    absSender.sendPhoto(photo);
+                                } catch (TelegramApiException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                return sendMessageToUser(user, absSender, messageBuilder.toString());
+                            }
+                            messageBuilder = new StringBuilder();
                         }
-                        messageBuilder = new StringBuilder();
+                    } else {
+                        messageBuilder
+                                .append("This artist has no new releases.");
+                        sendMessageToUser(user, absSender, messageBuilder.toString());
                     }
+                    return queryIsExecuted(mongoManager.finishLastCommand(user.getId()));
                 } else {
+                    setIterator(getIterator() + 1);
                     messageBuilder
-                            .append("This artist has no new releases.");
-                    sendMessageToUser(user, absSender, messageBuilder.toString());
+                            .append("Something went wrong.\n")
+                            .append("Please, press at the button with the name of the artist, ")
+                            .append("releases of which you want to get.");
+                    replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
+                    return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
                 }
-                mongoManager.finishLastCommand(user.getId());
-            } else {
-                setIterator(getIterator() + 1);
-                messageBuilder
-                        .append("Something went wrong.\n")
-                        .append("Please, press at the button with the name of the artist, ")
-                        .append("releases of which you want to get.");
-                ReplyKeyboardMarkup replyKeyboardMarkup;
-                replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
-                return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
-                        sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
-            }
+            default:
+                return false;
         }
-        return true;
     }
 
 }

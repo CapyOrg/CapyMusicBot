@@ -29,49 +29,50 @@ public class RemoveCommand extends MultiphaseBotCommand {
         MongoManager mongoManager = MongoManager.getInstance();
         StringBuilder messageBuilder = new StringBuilder();
         List<Artist> subscribes = mongoManager.getUserSubscribesList(user.getId());
-        if (getCurrentPhase() == FIRST_PHASE) {
-            if (subscribes.size() != 0) {
-                ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
-                setCurrentPhase(SECOND_PHASE);
-                return (queryIsExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
-                        sendMessageWithKeyboardToUser(user, absSender, "Please, choose the artist to remove", replyKeyboardMarkup));
-            } else {
-                messageBuilder.append("You don't have any subscribes yet!");
-                return (queryIsExecuted(mongoManager.finishLastCommand(user.getId())) &&
-                        sendMessageToUser(user, absSender, messageBuilder.toString()));
-            }
-        } else if (getCurrentPhase() == SECOND_PHASE) {
-            String userAnswer = getMessagesHistory().get(getIterator());
-            String artistNumber = userAnswer.split("\\.")[0];
-            if ((artistNumber.matches("^[0-9]+$")) &&
-                    (Integer.parseInt(artistNumber) > 0) &&
-                    (Integer.parseInt(artistNumber) <= subscribes.size())) {
-                String mbid = subscribes.get(Integer.parseInt(artistNumber) - 1).getMbid();
-                UpdateResults results = mongoManager.unsubscribeUser(user.getId(), mbid);
-                if (!mongoManager.isUserSubscribedOnArtist(user.getId(), mbid))
+        switch (getCurrentPhase()) {
+            case FIRST_PHASE:
+                if (subscribes.size() != 0) {
+                    ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
+                    setCurrentPhase(SECOND_PHASE);
+                    return (queryIsExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, "Please, choose the artist to remove", replyKeyboardMarkup));
+                } else {
+                    messageBuilder.append("You don't have any subscribes yet!");
+                    return (queryIsExecuted(mongoManager.finishLastCommand(user.getId())) &&
+                            sendMessageToUser(user, absSender, messageBuilder.toString()));
+                }
+            case SECOND_PHASE:
+                String userAnswer = getMessagesHistory().get(getIterator());
+                String artistNumber = userAnswer.split("\\.")[0];
+                if ((artistNumber.matches("^[0-9]+$")) &&
+                        (Integer.parseInt(artistNumber) > 0) &&
+                        (Integer.parseInt(artistNumber) <= subscribes.size())) {
+                    String mbid = subscribes.get(Integer.parseInt(artistNumber) - 1).getMbid();
+                    UpdateResults results = mongoManager.unsubscribeUser(user.getId(), mbid);
+                    if (!mongoManager.isUserSubscribedOnArtist(user.getId(), mbid))
+                        messageBuilder
+                                .append("I successfully removed ")
+                                .append(subscribes.get(Integer.parseInt(artistNumber) - 1).getName())
+                                .append(" from your subscribes list!");
+                    else
+                        messageBuilder
+                                .append("I could not delete ")
+                                .append(subscribes.get(Integer.parseInt(artistNumber) - 1).getName())
+                                .append(" from your subscribes list!");
+                    return (queryIsExecuted(results) &&
+                            queryIsExecuted(mongoManager.finishLastCommand(user.getId())) &&
+                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), new ReplyKeyboardMarkup().setKeyboard(new ArrayList<>())));
+                } else {
+                    setIterator(getIterator() + 1);
                     messageBuilder
-                            .append("I successfully removed ")
-                            .append(subscribes.get(Integer.parseInt(artistNumber) - 1).getName())
-                            .append(" from your subscribes list!");
-                else
-                    messageBuilder
-                            .append("I could not delete ")
-                            .append(subscribes.get(Integer.parseInt(artistNumber) - 1).getName())
-                            .append(" from your subscribes list!");
-                return (queryIsExecuted(results) &&
-                        queryIsExecuted(mongoManager.finishLastCommand(user.getId())) &&
-                        sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), new ReplyKeyboardMarkup().setKeyboard(new ArrayList<>())));
-            } else {
-                setIterator(getIterator() + 1);
-                messageBuilder
-                        .append("Something went wrong. Please, try again.");
-                ReplyKeyboardMarkup replyKeyboardMarkup =
-                        createKeyboardWithSubscribesList(MongoManager.getInstance().getUserSubscribesList(user.getId()));
-                return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
-                        sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
-            }
+                            .append("Something went wrong. Please, try again.");
+                    ReplyKeyboardMarkup replyKeyboardMarkup =
+                            createKeyboardWithSubscribesList(MongoManager.getInstance().getUserSubscribesList(user.getId()));
+                    return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
+                }
+            default:
+                return false;
         }
-        //if we reached this point then something went wrong: the phase doesn't match {1, 2}
-        return false;
     }
 }

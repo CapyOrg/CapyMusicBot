@@ -36,67 +36,69 @@ public class AddCommand extends MultiphaseBotCommand {
         StringBuilder messageBuilder = new StringBuilder();
         MongoManager mongoManager = MongoManager.getInstance();
         Service service = ServiceContext.getService();
-
-        if (getCurrentPhase() == FIRST_PHASE) {
-            messageBuilder
-                    .append("Please, type in the name of the artist you want to add to your subscribes list:");
-            setCurrentPhase(SECOND_PHASE);
-            return (queryIsExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
-                    sendMessageToUser(user, absSender, messageBuilder.toString()));
-        } else if (getCurrentPhase() == SECOND_PHASE) {
-            String artistName = getMessagesHistory().get(0);
-            List<Artist> artists = getArtistsOfferList(artistName);
-
-            //max number of artists that bot could offer to user
-            iteratorMaxValue = artists.size() - 1;
-            if (getIterator() <= iteratorMaxValue) {
-                SendPhoto photoMessage = createArtistOfferMessage(user, artists, getIterator());
-                ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboard(new ArrayList<>(Arrays.asList("Yes", "No")), true, true);
-                try {
-                    absSender.sendPhoto(photoMessage);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-                setCurrentPhase(THIRD_PHASE);
-                return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
-                        sendMessageWithKeyboardToUser(user, absSender, "Please, press \"yes\" or \"no\"", replyKeyboardMarkup));
-            } else {
+        List<Artist> artists;
+        String artistName;
+        switch (getCurrentPhase()) {
+            case FIRST_PHASE:
                 messageBuilder
-                        .append("Oops! I can't find artist you told me about. ")
-                        .append("Perhaps you typed artist's name wrong or this artist isn't ")
-                        .append("popular enough. :<");
-                return (queryIsExecuted(mongoManager.finishLastCommand(user.getId())) &&
-                        sendMessageToUser(user, absSender, messageBuilder.toString()));
-            }
-        } else if (getCurrentPhase() == THIRD_PHASE) {
-            String artistName = getMessagesHistory().get(0);
-            String userAnswer = getMessagesHistory().get(getMessagesHistory().size() - 1);
-            if (userAnswer.toLowerCase().equals("yes")) {
-                List<Artist> artists = getArtistsOfferList(artistName);
-                mongoManager.addArtist(new org.capy.musicbot.entities.Artist(service
-                        .checkOutWith(artists.get(getIterator()))
-                        .getContent()));
-
-
-                messageBuilder
-                        .append("I successfully added ")
-                        .append(artists.get(getIterator()).getName())
-                        .append(" to your subscribes list!");
-                return (queryIsExecuted(mongoManager.subscribeUser(user.getId(), artists.get(getIterator()).getMbid())) &&
-                        sendMessageToUser(user, absSender, messageBuilder.toString()) &&
-                        queryIsExecuted(mongoManager.finishLastCommand(user.getId())));
-            } else if (userAnswer.toLowerCase().equals("no")) {
-                setIterator(getIterator() + 1);
+                        .append("Please, type in the name of the artist you want to add to your subscribes list:");
                 setCurrentPhase(SECOND_PHASE);
-                mongoManager.updateCommandState(user.getId(), this);
-                return this.execute(absSender, user, null);
-            } else {
-                ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboard(new ArrayList<String>(Arrays.asList("Yes", "No")), true, true);
-                return sendMessageWithKeyboardToUser(user, absSender, "Please, press \"yes\" or \"no\"", replyKeyboardMarkup);
-            }
+                return (queryIsExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
+                        sendMessageToUser(user, absSender, messageBuilder.toString()));
+            case SECOND_PHASE:
+                artistName = getMessagesHistory().get(0);
+                artists = getArtistsOfferList(artistName);
+
+                //max number of artists that bot could offer to user
+                iteratorMaxValue = artists.size() - 1;
+                if (getIterator() <= iteratorMaxValue) {
+                    SendPhoto photoMessage = createArtistOfferMessage(user, artists, getIterator());
+                    ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboard(new ArrayList<>(Arrays.asList("Yes", "No")), true, true);
+                    try {
+                        absSender.sendPhoto(photoMessage);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                    setCurrentPhase(THIRD_PHASE);
+                    return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, "Please, press \"yes\" or \"no\"", replyKeyboardMarkup));
+                } else {
+                    messageBuilder
+                            .append("Oops! I can't find artist you told me about. ")
+                            .append("Perhaps you typed artist's name wrong or this artist isn't ")
+                            .append("popular enough. :<");
+                    return (queryIsExecuted(mongoManager.finishLastCommand(user.getId())) &&
+                            sendMessageToUser(user, absSender, messageBuilder.toString()));
+                }
+            case THIRD_PHASE:
+                artistName = getMessagesHistory().get(0);
+                String userAnswer = getMessagesHistory().get(getMessagesHistory().size() - 1);
+                if (userAnswer.toLowerCase().equals("yes")) {
+                    artists = getArtistsOfferList(artistName);
+                    mongoManager.addArtist(new org.capy.musicbot.entities.Artist(service
+                            .checkOutWith(artists.get(getIterator()))
+                            .getContent()));
+
+
+                    messageBuilder
+                            .append("I successfully added ")
+                            .append(artists.get(getIterator()).getName())
+                            .append(" to your subscribes list!");
+                    return (queryIsExecuted(mongoManager.subscribeUser(user.getId(), artists.get(getIterator()).getMbid())) &&
+                            sendMessageToUser(user, absSender, messageBuilder.toString()) &&
+                            queryIsExecuted(mongoManager.finishLastCommand(user.getId())));
+                } else if (userAnswer.toLowerCase().equals("no")) {
+                    setIterator(getIterator() + 1);
+                    setCurrentPhase(SECOND_PHASE);
+                    mongoManager.updateCommandState(user.getId(), this);
+                    return this.execute(absSender, user, null);
+                } else {
+                    ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboard(new ArrayList<String>(Arrays.asList("Yes", "No")), true, true);
+                    return sendMessageWithKeyboardToUser(user, absSender, "Please, press \"yes\" or \"no\"", replyKeyboardMarkup);
+                }
+            default:
+                return false;
         }
-        //if we reached this point then something went wrong: the phase doesn't match {1, 2, 3}
-        return false;
     }
 
     private static List<Artist> getArtistsOfferList(String artistName) throws ServiceException {
