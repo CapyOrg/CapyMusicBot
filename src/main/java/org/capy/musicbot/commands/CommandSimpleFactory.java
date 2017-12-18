@@ -16,7 +16,7 @@ public class CommandSimpleFactory {
     private static final String SET_LOCATION_COMMAND = "/set_location";
     private static final String SHOW_EVENTS_COMMAND = "/show_events";
 
-    public BotCommand createCommand(String command) {
+    public static BotCommand createCommand(String command) {
         switch (command) {
             case START_COMMAND:
                 return new StartCommand();

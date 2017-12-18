@@ -30,7 +30,7 @@ public class ShowReleasesAllCommand extends BotCommand {
     }
 
     @Override
-    public void execute(AbsSender absSender, User user) {
+    public boolean execute(AbsSender absSender, User user, String[] args) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
         boolean hasNewReleases = false;
         Service service = ServiceContext.getService();
@@ -99,5 +99,6 @@ public class ShowReleasesAllCommand extends BotCommand {
                     .append("don't have any new releases now.");
             sendMessageToUser(user, absSender, messageBuilder.toString());
         }
+        return true;
     }
 }

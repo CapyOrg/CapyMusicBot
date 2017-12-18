@@ -82,26 +82,30 @@ public class BotHelper {
         return replyKeyboardMarkup;
     }
 
-    public static void sendMessageToUser(User user, AbsSender absSender, String text) {
+    public static boolean sendMessageToUser(User user, AbsSender absSender, String text) {
         SendMessage message = new SendMessage()
                 .setChatId(user.getChatId())
                 .setText(text);
         try {
             absSender.execute(message);
+            return true;
         } catch (TelegramApiException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
-    public static void sendMessageWithKeyboardToUser(User user, AbsSender absSender, String text, ReplyKeyboardMarkup replyKeyboardMarkup) {
-        SendMessage message = new SendMessage()
+    public static boolean sendMessageWithKeyboardToUser(User user, AbsSender absSender, String text, ReplyKeyboardMarkup replyKeyboardMarkup) {
+        SendMessage keyboardMessage = new SendMessage()
                 .setChatId(user.getChatId())
                 .setText(text)
                 .setReplyMarkup(replyKeyboardMarkup);
         try {
-            absSender.execute(message);
+            absSender.execute(keyboardMessage);
+            return true;
         } catch (TelegramApiException e) {
             e.printStackTrace();
+            return false;
         }
     }
 }

@@ -14,7 +14,7 @@ public class StartCommand extends BotCommand {
     }
 
     @Override
-    public void execute(AbsSender absSender, User user) {
+    public boolean execute(AbsSender absSender, User user, String[] args) {
         StringBuilder messageBuilder = new StringBuilder();
         String userName = user.getFirstName() + " " + user.getLastName();
 
@@ -26,7 +26,10 @@ public class StartCommand extends BotCommand {
                 .append("I will help you to not miss news about ")
                 .append("your favorite artists. To see the list ")
                 .append("of available commands use /help");
-        sendMessageToUser(user, absSender, messageBuilder.toString());
         MongoManager.getInstance().addUser(user);
+        if (sendMessageToUser(user, absSender, messageBuilder.toString()))
+            return true;
+        else
+            return false;
     }
 }

@@ -1,13 +1,14 @@
 package org.capy.musicbot;
 
 import org.capy.musicbot.commands.BotCommand;
-import org.capy.musicbot.commands.CommandSimpleFactory;
 import org.capy.musicbot.database.MongoManager;
 import org.capy.musicbot.entities.User;
+import org.capy.musicbot.service.ServiceException;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import static org.capy.musicbot.BotHelper.sendMessageToUser;
+import static org.capy.musicbot.commands.CommandSimpleFactory.createCommand;
 
 
 /**
@@ -37,9 +38,15 @@ public class CapyMusicBot extends TelegramLongPollingBot {
             long id = update.getMessage().getChat().getId();
             User user = new User(id, chatId, username, firstName, lastName);
 
-            BotCommand command = new CommandSimpleFactory().createCommand(messageText);
-            if (command != null)
-                command.execute(this, user);
+            BotCommand command = createCommand(messageText);
+            if (command != null) {
+                try {
+                    command.execute(this, user, null);
+                } catch (ServiceException e) {
+                    e.printStackTrace();
+                }
+            }
+
             else {
                 StringBuilder builder = new StringBuilder();
                 if (messageText.startsWith("/")) {
@@ -51,7 +58,12 @@ public class CapyMusicBot extends TelegramLongPollingBot {
                     user = MongoManager.getInstance().findUser(id);
                     if (user != null && !user.getCommands().isEmpty()) {
                         user.getCurrentCommand().addMessage(messageText);
-                        user.getCurrentCommand().execute(this, user);
+                        try {
+                            user.getCurrentCommand().execute(this, user, null);
+                        } catch (ServiceException e) {
+                            e.printStackTrace();
+                        }
+
                     } else {
                         builder.append("Please, use any command to start working with bot.\n")
                                 .append("To see the list of available commands use /help");

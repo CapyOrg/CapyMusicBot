@@ -13,7 +13,7 @@ public class HelpCommand extends BotCommand {
     }
 
     @Override
-    public void execute(AbsSender absSender, User user) {
+    public boolean execute(AbsSender absSender, User user, String[] args) {
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder
                 .append("Available commands:\n")
@@ -29,5 +29,6 @@ public class HelpCommand extends BotCommand {
                 .append("/set_location - set location of events you want to get information about\n")
                 .append("/show_events - show upcoming events of an exact artist in the city you've set by /set_location command");
         sendMessageToUser(user, absSender, messageBuilder.toString());
+        return true;
     }
 }

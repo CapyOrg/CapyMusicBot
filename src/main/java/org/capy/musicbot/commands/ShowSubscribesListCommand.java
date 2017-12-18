@@ -17,7 +17,7 @@ public class ShowSubscribesListCommand extends BotCommand {
     }
 
     @Override
-    public void execute(AbsSender absSender, User user) {
+    public boolean execute(AbsSender absSender, User user, String[] args) {
         StringBuilder messageBuilder = new StringBuilder();
         List<Artist> subscribes = MongoManager.getInstance().getUserSubscribesList(user.getId());
         int i = 0;
@@ -33,5 +33,6 @@ public class ShowSubscribesListCommand extends BotCommand {
             messageBuilder.append("You don't have any subscribes yet!");
 
         sendMessageToUser(user, absSender, messageBuilder.toString());
+        return true;
     }
 }

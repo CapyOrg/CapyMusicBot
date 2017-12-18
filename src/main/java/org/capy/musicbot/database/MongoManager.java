@@ -88,26 +88,13 @@ public class MongoManager implements DBManager{
         return addCommandToCommandsList(id, command);
     }
 
-    public void finishLastCommand(long id) {
-        if (findUser(id) != null) {
+    public UpdateResults finishLastCommand(long id) {
             Query<User> query = datastore.createQuery(User.class);
             UpdateOperations<User> updateOperations =
                     datastore.createUpdateOperations(User.class)
                             .removeLast("commands");
             UpdateResults results = datastore.update(query.field("_id").equal(id), updateOperations);
-        }
-    }
-
-    public void finishAllCommands(long id) {
-        if (findUser(id) != null) {
-            while (findUser(id).getCurrentCommand() != null) {
-                Query<User> query = datastore.createQuery(User.class);
-                UpdateOperations<User> updateOperations =
-                        datastore.createUpdateOperations(User.class)
-                                .removeLast("commands");
-                datastore.update(query.field("_id").equal(id), updateOperations);
-            }
-        }
+        return results;
     }
 
     public UpdateResults setUserNotificationsMode(long id, boolean modeOn) {

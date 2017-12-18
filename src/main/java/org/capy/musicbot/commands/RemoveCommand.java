@@ -3,8 +3,8 @@ package org.capy.musicbot.commands;
 import org.capy.musicbot.database.MongoManager;
 import org.capy.musicbot.entities.Artist;
 import org.capy.musicbot.entities.User;
+import org.mongodb.morphia.query.UpdateResults;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.bots.AbsSender;
 
 import java.util.ArrayList;
@@ -15,43 +15,40 @@ import static org.capy.musicbot.BotHelper.*;
 /**
  * Created by enableee on 11.12.17.
  */
-public class RemoveCommand extends BotCommand {
-    private int phase;
-    private int iterator;
+public class RemoveCommand extends MultiphaseBotCommand {
 
     private final static int FIRST_PHASE = 1;
     private final static int SECOND_PHASE = 2;
 
     protected RemoveCommand() {
-        this.phase = FIRST_PHASE;
-        this.iterator = 0;
+        super();
     }
 
     @Override
-    public void execute(AbsSender absSender, User user) {
+    public boolean execute(AbsSender absSender, User user, String[] args) {
+        MongoManager mongoManager = MongoManager.getInstance();
         StringBuilder messageBuilder = new StringBuilder();
-        List<Artist> subscribes = MongoManager.getInstance().getUserSubscribesList(user.getId());
-        if (phase == FIRST_PHASE) {
-            ReplyKeyboardMarkup replyKeyboardMarkup;
+        List<Artist> subscribes = mongoManager.getUserSubscribesList(user.getId());
+        if (getCurrentPhase() == FIRST_PHASE) {
             if (subscribes.size() != 0) {
-                replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
-                sendMessageWithKeyboardToUser(user, absSender, "Please, choose the artist to remove", replyKeyboardMarkup);
-                phase = SECOND_PHASE;
-                MongoManager.getInstance().addCommandToCommandsList(user.getId(), this);
+                ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
+                setCurrentPhase(SECOND_PHASE);
+                return (queryIsExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
+                        sendMessageWithKeyboardToUser(user, absSender, "Please, choose the artist to remove", replyKeyboardMarkup));
             } else {
                 messageBuilder.append("You don't have any subscribes yet!");
-                sendMessageToUser(user, absSender, messageBuilder.toString());
-                MongoManager.getInstance().finishLastCommand(user.getId());
+                return (queryIsExecuted(mongoManager.finishLastCommand(user.getId())) &&
+                        sendMessageToUser(user, absSender, messageBuilder.toString()));
             }
-        } else if (phase == SECOND_PHASE) {
-            String userAnswer = getMessagesHistory().get(iterator);
+        } else if (getCurrentPhase() == SECOND_PHASE) {
+            String userAnswer = getMessagesHistory().get(getIterator());
             String artistNumber = userAnswer.split("\\.")[0];
             if ((artistNumber.matches("^[0-9]+$")) &&
                     (Integer.parseInt(artistNumber) > 0) &&
                     (Integer.parseInt(artistNumber) <= subscribes.size())) {
                 String mbid = subscribes.get(Integer.parseInt(artistNumber) - 1).getMbid();
-                MongoManager.getInstance().unsubscribeUser(user.getId(), mbid);
-                if (!MongoManager.getInstance().isUserSubscribedOnArtist(user.getId(), mbid))
+                UpdateResults results = mongoManager.unsubscribeUser(user.getId(), mbid);
+                if (!mongoManager.isUserSubscribedOnArtist(user.getId(), mbid))
                     messageBuilder
                             .append("I successfully removed ")
                             .append(subscribes.get(Integer.parseInt(artistNumber) - 1).getName())
@@ -61,20 +58,20 @@ public class RemoveCommand extends BotCommand {
                             .append("I could not delete ")
                             .append(subscribes.get(Integer.parseInt(artistNumber) - 1).getName())
                             .append(" from your subscribes list!");
-                sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), new ReplyKeyboardMarkup().setKeyboard(new ArrayList<KeyboardRow>()));
-                MongoManager.getInstance().finishLastCommand(user.getId());
+                return (queryIsExecuted(results) &&
+                        queryIsExecuted(mongoManager.finishLastCommand(user.getId())) &&
+                        sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), new ReplyKeyboardMarkup().setKeyboard(new ArrayList<>())));
             } else {
-                iterator++;
+                setIterator(getIterator() + 1);
                 messageBuilder
                         .append("Something went wrong. Please, try again.");
                 ReplyKeyboardMarkup replyKeyboardMarkup =
                         createKeyboardWithSubscribesList(MongoManager.getInstance().getUserSubscribesList(user.getId()));
-                sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
-                MongoManager.getInstance().updateCommandState(user.getId(), this);
+                return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
+                        sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
             }
         }
-
+        //if we reached this point then something went wrong: the phase doesn't match {1, 2}
+        return false;
     }
-
-
 }

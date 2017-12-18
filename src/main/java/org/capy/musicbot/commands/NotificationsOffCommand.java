@@ -14,7 +14,7 @@ public class NotificationsOffCommand extends BotCommand {
     }
 
     @Override
-    public void execute(AbsSender absSender, User user) {
+    public boolean execute(AbsSender absSender, User user, String[] args) {
         long id = user.getId();
         StringBuilder messageBuilder = new StringBuilder();
         MongoManager mongoManager = MongoManager.getInstance();
@@ -23,9 +23,11 @@ public class NotificationsOffCommand extends BotCommand {
         if (mongoManager.findUser(id) != null) {
             mongoManager.setUserNotificationsMode(id, false);
             messageBuilder.append("I successfully turned notifications mode off!");
+            sendMessageToUser(user, absSender, messageBuilder.toString());
         } else {
             messageBuilder.append("Oops! Something went wrong. Please, try again.");
+            sendMessageToUser(user, absSender, messageBuilder.toString());
         }
-        sendMessageToUser(user, absSender, messageBuilder.toString());
+        return true;
     }
 }
