@@ -16,16 +16,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.capy.musicbot.BotHelper.*;
+import static org.capy.musicbot.database.MongoManager.isQueryExecuted;
 
 /**
  * Created by enableee on 10.12.17.
  */
 public class AddCommand extends MultiphaseBotCommand {
     private int iteratorMaxValue;
-
-    private final static int FIRST_PHASE = 1;
-    private final static int SECOND_PHASE = 2;
-    private final static int THIRD_PHASE = 3;
 
     protected AddCommand() {
         super();
@@ -43,8 +40,9 @@ public class AddCommand extends MultiphaseBotCommand {
                 messageBuilder
                         .append("Please, type in the name of the artist you want to add to your subscribes list:");
                 setCurrentPhase(SECOND_PHASE);
-                return (queryIsExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
-                        sendMessageToUser(user, absSender, messageBuilder.toString()));
+                isCommandExecuted &= isQueryExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
+                        sendMessageToUser(user, absSender, messageBuilder.toString());
+                break;
             case SECOND_PHASE:
                 artistName = getMessagesHistory().get(0);
                 artists = getArtistsOfferList(artistName);
@@ -60,16 +58,17 @@ public class AddCommand extends MultiphaseBotCommand {
                         e.printStackTrace();
                     }
                     setCurrentPhase(THIRD_PHASE);
-                    return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
-                            sendMessageWithKeyboardToUser(user, absSender, "Please, press \"yes\" or \"no\"", replyKeyboardMarkup));
+                    isCommandExecuted &= isQueryExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, "Please, press \"yes\" or \"no\"", replyKeyboardMarkup);
                 } else {
                     messageBuilder
                             .append("Oops! I can't find artist you told me about. ")
                             .append("Perhaps you typed artist's name wrong or this artist isn't ")
                             .append("popular enough. :<");
-                    return (queryIsExecuted(mongoManager.finishLastCommand(user.getId())) &&
-                            sendMessageToUser(user, absSender, messageBuilder.toString()));
+                    isCommandExecuted &= isQueryExecuted(mongoManager.finishLastCommand(user.getId())) &&
+                            sendMessageToUser(user, absSender, messageBuilder.toString());
                 }
+                break;
             case THIRD_PHASE:
                 artistName = getMessagesHistory().get(0);
                 String userAnswer = getMessagesHistory().get(getMessagesHistory().size() - 1);
@@ -84,21 +83,23 @@ public class AddCommand extends MultiphaseBotCommand {
                             .append("I successfully added ")
                             .append(artists.get(getIterator()).getName())
                             .append(" to your subscribes list!");
-                    return (queryIsExecuted(mongoManager.subscribeUser(user.getId(), artists.get(getIterator()).getMbid())) &&
+                    isCommandExecuted &= isQueryExecuted(mongoManager.subscribeUser(user.getId(), artists.get(getIterator()).getMbid())) &&
                             sendMessageToUser(user, absSender, messageBuilder.toString()) &&
-                            queryIsExecuted(mongoManager.finishLastCommand(user.getId())));
+                            isQueryExecuted(mongoManager.finishLastCommand(user.getId()));
                 } else if (userAnswer.toLowerCase().equals("no")) {
                     setIterator(getIterator() + 1);
                     setCurrentPhase(SECOND_PHASE);
                     mongoManager.updateCommandState(user.getId(), this);
-                    return this.execute(absSender, user, null);
+                    isCommandExecuted &= this.execute(absSender, user, null);
                 } else {
-                    ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboard(new ArrayList<String>(Arrays.asList("Yes", "No")), true, true);
-                    return sendMessageWithKeyboardToUser(user, absSender, "Please, press \"yes\" or \"no\"", replyKeyboardMarkup);
+                    ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboard(new ArrayList<>(Arrays.asList("Yes", "No")), true, true);
+                    isCommandExecuted &= sendMessageWithKeyboardToUser(user, absSender, "Please, press \"yes\" or \"no\"", replyKeyboardMarkup);
                 }
+                break;
             default:
                 return false;
         }
+        return isCommandExecuted;
     }
 
     private static List<Artist> getArtistsOfferList(String artistName) throws ServiceException {

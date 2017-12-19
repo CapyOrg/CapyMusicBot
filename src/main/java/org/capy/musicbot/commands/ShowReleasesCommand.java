@@ -19,15 +19,13 @@ import java.time.Period;
 import java.util.List;
 
 import static org.capy.musicbot.BotHelper.*;
+import static org.capy.musicbot.database.MongoManager.isQueryExecuted;
 
 /**
  * Created by enableee on 11.12.17.
  */
 public class ShowReleasesCommand extends MultiphaseBotCommand {
     private static final int DAYS_AGO = 90;
-
-    private final static int FIRST_PHASE = 1;
-    private final static int SECOND_PHASE = 2;
 
     protected ShowReleasesCommand() {
         super();
@@ -47,8 +45,9 @@ public class ShowReleasesCommand extends MultiphaseBotCommand {
                         .append("whose releases you want to get.");
                 replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
                 setCurrentPhase(SECOND_PHASE);
-                return (queryIsExecuted(MongoManager.getInstance().addCommandToCommandsList(user.getId(), this)) &&
-                        sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
+                isCommandExecuted &= isQueryExecuted(MongoManager.getInstance().addCommandToCommandsList(user.getId(), this)) &&
+                        sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
+                break;
             case SECOND_PHASE:
                 Service service = ServiceContext.getService();
                 String userAnswer = getMessagesHistory().get(getIterator());
@@ -91,18 +90,19 @@ public class ShowReleasesCommand extends MultiphaseBotCommand {
                                     absSender.sendPhoto(photo);
                                 } catch (TelegramApiException e) {
                                     e.printStackTrace();
+                                    isCommandExecuted = false;
                                 }
                             } else {
-                                return sendMessageToUser(user, absSender, messageBuilder.toString());
+                                isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString());
                             }
                             messageBuilder = new StringBuilder();
                         }
                     } else {
                         messageBuilder
                                 .append("This artist has no new releases.");
-                        sendMessageToUser(user, absSender, messageBuilder.toString());
+                        isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString());
                     }
-                    return queryIsExecuted(mongoManager.finishLastCommand(user.getId()));
+                    isCommandExecuted &= isQueryExecuted(mongoManager.finishLastCommand(user.getId()));
                 } else {
                     setIterator(getIterator() + 1);
                     messageBuilder
@@ -110,12 +110,14 @@ public class ShowReleasesCommand extends MultiphaseBotCommand {
                             .append("Please, press at the button with the name of the artist, ")
                             .append("releases of which you want to get.");
                     replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
-                    return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
-                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
+                    isCommandExecuted &= isQueryExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
+                    break;
                 }
             default:
                 return false;
         }
+        return isCommandExecuted;
     }
 
 }

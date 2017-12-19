@@ -32,7 +32,7 @@ public class ShowSubscribesListCommand extends BotCommand {
         } else
             messageBuilder.append("You don't have any subscribes yet!");
 
-        sendMessageToUser(user, absSender, messageBuilder.toString());
-        return true;
+        isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString());
+        return isCommandExecuted;
     }
 }

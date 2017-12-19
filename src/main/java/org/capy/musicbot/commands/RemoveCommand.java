@@ -11,14 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.capy.musicbot.BotHelper.*;
+import static org.capy.musicbot.database.MongoManager.isQueryExecuted;
 
 /**
  * Created by enableee on 11.12.17.
  */
 public class RemoveCommand extends MultiphaseBotCommand {
-
-    private final static int FIRST_PHASE = 1;
-    private final static int SECOND_PHASE = 2;
 
     protected RemoveCommand() {
         super();
@@ -34,13 +32,14 @@ public class RemoveCommand extends MultiphaseBotCommand {
                 if (subscribes.size() != 0) {
                     ReplyKeyboardMarkup replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
                     setCurrentPhase(SECOND_PHASE);
-                    return (queryIsExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
-                            sendMessageWithKeyboardToUser(user, absSender, "Please, choose the artist to remove", replyKeyboardMarkup));
+                    isCommandExecuted &= isQueryExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, "Please, choose the artist to remove", replyKeyboardMarkup);
                 } else {
                     messageBuilder.append("You don't have any subscribes yet!");
-                    return (queryIsExecuted(mongoManager.finishLastCommand(user.getId())) &&
-                            sendMessageToUser(user, absSender, messageBuilder.toString()));
+                    isCommandExecuted &= isQueryExecuted(mongoManager.finishLastCommand(user.getId())) &&
+                            sendMessageToUser(user, absSender, messageBuilder.toString());
                 }
+                break;
             case SECOND_PHASE:
                 String userAnswer = getMessagesHistory().get(getIterator());
                 String artistNumber = userAnswer.split("\\.")[0];
@@ -59,20 +58,22 @@ public class RemoveCommand extends MultiphaseBotCommand {
                                 .append("I could not delete ")
                                 .append(subscribes.get(Integer.parseInt(artistNumber) - 1).getName())
                                 .append(" from your subscribes list!");
-                    return (queryIsExecuted(results) &&
-                            queryIsExecuted(mongoManager.finishLastCommand(user.getId())) &&
-                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), new ReplyKeyboardMarkup().setKeyboard(new ArrayList<>())));
+                    isCommandExecuted &= isQueryExecuted(results) &&
+                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), new ReplyKeyboardMarkup().setKeyboard(new ArrayList<>())) &&
+                            isQueryExecuted(mongoManager.finishLastCommand(user.getId()));
                 } else {
                     setIterator(getIterator() + 1);
                     messageBuilder
                             .append("Something went wrong. Please, try again.");
                     ReplyKeyboardMarkup replyKeyboardMarkup =
                             createKeyboardWithSubscribesList(MongoManager.getInstance().getUserSubscribesList(user.getId()));
-                    return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
-                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
+                    isCommandExecuted &= isQueryExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
                 }
+                break;
             default:
                 return false;
         }
+        return isCommandExecuted;
     }
 }

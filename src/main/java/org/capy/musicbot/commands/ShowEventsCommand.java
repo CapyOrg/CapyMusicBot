@@ -15,14 +15,12 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 import static org.capy.musicbot.BotHelper.*;
+import static org.capy.musicbot.database.MongoManager.isQueryExecuted;
 
 /**
  * Created by enableee on 14.12.17.
  */
 public class ShowEventsCommand extends MultiphaseBotCommand {
-
-    private final static int FIRST_PHASE = 1;
-    private final static int SECOND_PHASE = 2;
 
     protected ShowEventsCommand() {
         super();
@@ -44,13 +42,14 @@ public class ShowEventsCommand extends MultiphaseBotCommand {
                     ReplyKeyboardMarkup replyKeyboardMarkup;
                     replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
                     setCurrentPhase(SECOND_PHASE);
-                    return (queryIsExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
-                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
+                    isCommandExecuted &= isQueryExecuted(mongoManager.addCommandToCommandsList(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
                 } else {
                     messageBuilder
                             .append("You should firstly set your location by using /set_location command");
-                    return sendMessageToUser(user, absSender, messageBuilder.toString());
+                    isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString());
                 }
+                break;
             case SECOND_PHASE:
                 Service service = ServiceContext.getService();
                 String userAnswer = getMessagesHistory().get(getIterator());
@@ -61,8 +60,8 @@ public class ShowEventsCommand extends MultiphaseBotCommand {
                     String mbid = subscribes.get(Integer.parseInt(artistNumber) - 1).getMbid();
                     String artistName = subscribes.get(Integer.parseInt(artistNumber) - 1).getName();
                     List<Event> events = service
-                            .getEvents(service
-                                            .checkOutWith(new org.capy.musicbot.service.entries.Artist(artistName, mbid))
+                            .getEvents(
+                                    service.checkOutWith(new org.capy.musicbot.service.entries.Artist(artistName, mbid))
                                             .getContent(),
                                     mongoManager.findUser(user.getId()).getLocation()).getContent();
 
@@ -74,17 +73,17 @@ public class ShowEventsCommand extends MultiphaseBotCommand {
                                     .append(formatter.format(Date.from(event.getDate())))
                                     .append("\n")
                                     .append(event.getUri());
-                            sendMessageToUser(user, absSender, messageBuilder.toString());
-                            messageBuilder = new StringBuilder();
                             user.addShownEvent(mbid, event.getId());
-                            mongoManager.updateUserState(user);
+                            isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString()) &&
+                                    mongoManager.updateUserState(user);
+                            messageBuilder = new StringBuilder();
                         }
                     } else {
                         messageBuilder
                                 .append("This artist has no events in the near future.");
-                        sendMessageToUser(user, absSender, messageBuilder.toString());
+                        isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString());
                     }
-                    return (queryIsExecuted(mongoManager.finishLastCommand(user.getId())));
+                    isCommandExecuted &= isQueryExecuted(mongoManager.finishLastCommand(user.getId()));
                 } else {
                     setIterator(getIterator() + 1);
                     messageBuilder
@@ -93,12 +92,14 @@ public class ShowEventsCommand extends MultiphaseBotCommand {
                             .append("releases of which you want to get.");
                     ReplyKeyboardMarkup replyKeyboardMarkup;
                     replyKeyboardMarkup = createKeyboardWithSubscribesList(subscribes);
-                    return (queryIsExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
-                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup));
+                    isCommandExecuted &= isQueryExecuted(mongoManager.updateCommandState(user.getId(), this)) &&
+                            sendMessageWithKeyboardToUser(user, absSender, messageBuilder.toString(), replyKeyboardMarkup);
                 }
+                break;
             default:
                 return false;
         }
+        return isCommandExecuted;
     }
 
 }

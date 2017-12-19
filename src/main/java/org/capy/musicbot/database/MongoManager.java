@@ -227,4 +227,8 @@ public class MongoManager implements DBManager{
         else
             return false;
     }
+
+    public static boolean isQueryExecuted(UpdateResults results) {
+        return (results.getInsertedCount() != 0 || results.getUpdatedCount() != 0);
+    }
 }

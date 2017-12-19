@@ -28,7 +28,7 @@ public class HelpCommand extends BotCommand {
                 .append("/show_releases_all - show releases of all artists that you are subscribed on\n")
                 .append("/set_location - set location of events you want to get information about\n")
                 .append("/show_events - show upcoming events of an exact artist in the city you've set by /set_location command");
-        sendMessageToUser(user, absSender, messageBuilder.toString());
-        return true;
+        isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString());
+        return isCommandExecuted;
     }
 }

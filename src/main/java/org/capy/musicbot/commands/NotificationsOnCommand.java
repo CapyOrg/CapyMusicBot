@@ -5,6 +5,7 @@ import org.capy.musicbot.entities.User;
 import org.telegram.telegrambots.bots.AbsSender;
 
 import static org.capy.musicbot.BotHelper.sendMessageToUser;
+import static org.capy.musicbot.database.MongoManager.isQueryExecuted;
 
 /**
  * Created by enableee on 10.12.17.
@@ -21,13 +22,13 @@ public class NotificationsOnCommand extends BotCommand {
 
         mongoManager.addUser(user);
         if (mongoManager.findUser(id) != null) {
-            mongoManager.setUserNotificationsMode(id, true);
             messageBuilder.append("I successfully turned notifications mode on!");
-            sendMessageToUser(user, absSender, messageBuilder.toString());
+            isCommandExecuted &= isQueryExecuted(mongoManager.setUserNotificationsMode(id, true)) &&
+                    sendMessageToUser(user, absSender, messageBuilder.toString());
         } else {
             messageBuilder.append("Oops! Something went wrong. Please, try again.");
-            sendMessageToUser(user, absSender, messageBuilder.toString());
+            isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString());
         }
-        return true;
+        return isCommandExecuted;
     }
 }

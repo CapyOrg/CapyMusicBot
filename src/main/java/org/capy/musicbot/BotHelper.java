@@ -69,19 +69,6 @@ public class BotHelper {
         return replyKeyboardMarkup;
     }
 
-    public static ReplyKeyboardMarkup createYesOrNoKeyboard() {
-        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> commands = new ArrayList<>();
-        KeyboardRow commandRow = new KeyboardRow();
-        commandRow.add("Yes");
-        commandRow.add("No");
-        commands.add(commandRow);
-        replyKeyboardMarkup.setResizeKeyboard(true);
-        replyKeyboardMarkup.setOneTimeKeyboard(true);
-        replyKeyboardMarkup.setKeyboard(commands);
-        return replyKeyboardMarkup;
-    }
-
     public static boolean sendMessageToUser(User user, AbsSender absSender, String text) {
         SendMessage message = new SendMessage()
                 .setChatId(user.getChatId())

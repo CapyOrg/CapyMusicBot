@@ -3,7 +3,6 @@ package org.capy.musicbot.commands;
 import org.capy.musicbot.entities.User;
 import org.capy.musicbot.service.ServiceException;
 import org.mongodb.morphia.annotations.Embedded;
-import org.mongodb.morphia.query.UpdateResults;
 import org.telegram.telegrambots.bots.AbsSender;
 
 import java.util.ArrayList;
@@ -14,6 +13,8 @@ import java.util.List;
  */
 @Embedded
 public abstract class BotCommand {
+    protected boolean isCommandExecuted = true;
+
     //a list of user's messages that are associated with this exact instance of BotCommand
     private List<String> messagesHistory = new ArrayList<>();
 
@@ -32,9 +33,5 @@ public abstract class BotCommand {
 
     public List<String> getMessagesHistory() {
         return messagesHistory;
-    }
-
-    protected static boolean queryIsExecuted(UpdateResults results) {
-        return (results.getInsertedCount() != 0 || results.getUpdatedCount() != 0);
     }
 }

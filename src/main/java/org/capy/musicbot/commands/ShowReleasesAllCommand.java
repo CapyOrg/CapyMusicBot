@@ -55,7 +55,7 @@ public class ShowReleasesAllCommand extends BotCommand {
 
                 if (!releases.isEmpty()) {
                     messageBuilder.append(artistName);
-                    sendMessageToUser(user, absSender, messageBuilder.toString());
+                    isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString());
                     messageBuilder = new StringBuilder();
                     hasNewReleases = true;
                     for (Release release : releases) {
@@ -85,7 +85,7 @@ public class ShowReleasesAllCommand extends BotCommand {
                                 e.printStackTrace();
                             }
                         } else {
-                            sendMessageToUser(user, absSender, messageBuilder.toString());
+                            isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString());
                         }
                         messageBuilder = new StringBuilder();
                     }
@@ -97,8 +97,8 @@ public class ShowReleasesAllCommand extends BotCommand {
             messageBuilder
                     .append("All of artists that you are subscribed on ")
                     .append("don't have any new releases now.");
-            sendMessageToUser(user, absSender, messageBuilder.toString());
+            isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString());
         }
-        return true;
+        return isCommandExecuted;
     }
 }
