@@ -6,6 +6,8 @@ import org.capy.musicbot.service.Service;
 import org.capy.musicbot.service.ServiceContext;
 import org.capy.musicbot.service.ServiceException;
 import org.capy.musicbot.service.entries.Artist;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.bots.AbsSender;
@@ -22,6 +24,7 @@ import static org.capy.musicbot.database.MongoManager.isQueryExecuted;
  * Created by enableee on 10.12.17.
  */
 public class AddCommand extends MultiphaseBotCommand {
+    private static final Logger logger = LoggerFactory.getLogger(AddCommand.class.getSimpleName());
     private int iteratorMaxValue;
 
     protected AddCommand() {
@@ -55,7 +58,9 @@ public class AddCommand extends MultiphaseBotCommand {
                     try {
                         absSender.sendPhoto(photoMessage);
                     } catch (TelegramApiException e) {
-                        e.printStackTrace();
+                        logger.error("Failed to send photo message in command " +
+                                AddCommand.class.getSimpleName() +
+                                "; user @" + user.getUsername(), e);
                     }
                     setCurrentPhase(THIRD_PHASE);
                     isCommandExecuted &= isQueryExecuted(mongoManager.updateCommandState(user.getId(), this)) &&

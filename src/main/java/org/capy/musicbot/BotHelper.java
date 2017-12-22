@@ -2,6 +2,8 @@ package org.capy.musicbot;
 
 import org.capy.musicbot.entities.Artist;
 import org.capy.musicbot.entities.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -15,6 +17,8 @@ import java.util.List;
  * Created by enableee on 13.12.17.
  */
 public class BotHelper {
+    private static final Logger logger = LoggerFactory.getLogger(BotHelper.class.getSimpleName());
+
     public static ReplyKeyboardMarkup createKeyboard(List<String> buttonsText, boolean resizeKeyboard, boolean oneTimeKeyboard) {
         StringBuilder buttonTextBuilder = new StringBuilder();
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
@@ -77,7 +81,7 @@ public class BotHelper {
             absSender.execute(message);
             return true;
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            logger.error("Failed to send message to user @" + user.getUsername(), e);
             return false;
         }
     }
@@ -91,7 +95,7 @@ public class BotHelper {
             absSender.execute(keyboardMessage);
             return true;
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            logger.error("Failed to send keyboard message to user @" + user.getUsername(), e);
             return false;
         }
     }

@@ -4,6 +4,8 @@ import org.capy.musicbot.commands.BotCommand;
 import org.capy.musicbot.database.MongoManager;
 import org.capy.musicbot.entities.User;
 import org.capy.musicbot.service.ServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
@@ -16,6 +18,8 @@ import static org.capy.musicbot.commands.CommandSimpleFactory.createCommand;
  */
 public class CapyMusicBot extends TelegramLongPollingBot {
     private static CapyMusicBot instance;
+    private static final Logger logger = LoggerFactory.getLogger(CapyMusicBot.class.getName());
+
 
     public static CapyMusicBot getInstance() {
         final CapyMusicBot currentInstance;
@@ -41,9 +45,12 @@ public class CapyMusicBot extends TelegramLongPollingBot {
             BotCommand command = createCommand(messageText);
             if (command != null) {
                 try {
-                    command.execute(this, user, null);
+                    if (command.execute(this, user, null))
+                        logger.info("User @" + username + " started command " + command.getClass().getSimpleName());
+                    else
+                        logger.debug("User @" + username + " started command " + command.getClass().getSimpleName() + " and it failed");
                 } catch (ServiceException e) {
-                    e.printStackTrace();
+                    logger.error("Method " + command.getClass().getSimpleName() + " started by user @" + username + " throws ", e);
                 }
             }
 
@@ -59,9 +66,17 @@ public class CapyMusicBot extends TelegramLongPollingBot {
                     if (user != null && !user.getCommands().isEmpty()) {
                         user.getCurrentCommand().addMessage(messageText);
                         try {
-                            user.getCurrentCommand().execute(this, user, null);
+                            if (user.getCurrentCommand().execute(this, user, null))
+                                logger.info("User @" + username +
+                                        " continued command " + user.getCurrentCommand().getClass().getSimpleName() +
+                                        " with message \"" + messageText + "\"");
+                            else
+                                logger.debug("User @" + username +
+                                        " continued command " + user.getCurrentCommand().getClass().getSimpleName() +
+                                        " with message \"" + messageText + "\". Command failed");
                         } catch (ServiceException e) {
-                            e.printStackTrace();
+                            logger.error("Command " + command.getClass().getSimpleName() +
+                                    " continued by user @" + username + " throws ", e);
                         }
 
                     } else {

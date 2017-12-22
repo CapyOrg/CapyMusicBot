@@ -1,6 +1,6 @@
 package org.capy.musicbot.entities;
 
-import org.capy.musicbot.commands.BotCommand;
+import org.capy.musicbot.commands.MultiphaseBotCommand;
 import org.capy.musicbot.service.entries.Location;
 import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Entity;
@@ -37,7 +37,7 @@ public class User {
     private Map<String, Long> lastShownEvents = new HashMap<>();
 
     @Embedded
-    private List<BotCommand> commands = new ArrayList<>(); //list of unfinished commands
+    private List<MultiphaseBotCommand> commands = new ArrayList<>(); //list of unfinished commands
 
     public User() {
     }
@@ -83,11 +83,11 @@ public class User {
         return notificationModeOn;
     }
 
-    public List<BotCommand> getCommands() {
+    public List<MultiphaseBotCommand> getCommands() {
         return commands;
     }
 
-    public BotCommand getCurrentCommand() {
+    public MultiphaseBotCommand getCurrentCommand() {
         if (!commands.isEmpty())
             return commands.get(commands.size() - 1);
         else

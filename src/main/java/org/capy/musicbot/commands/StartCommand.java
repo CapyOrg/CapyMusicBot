@@ -26,8 +26,8 @@ public class StartCommand extends BotCommand {
                 .append("I will help you to not miss news about ")
                 .append("your favorite artists. To see the list ")
                 .append("of available commands use /help");
-        isCommandExecuted &= MongoManager.getInstance().addUser(user) &&
-                sendMessageToUser(user, absSender, messageBuilder.toString());
+        MongoManager.getInstance().addUser(user);
+        isCommandExecuted &= sendMessageToUser(user, absSender, messageBuilder.toString());
         return isCommandExecuted;
     }
 }

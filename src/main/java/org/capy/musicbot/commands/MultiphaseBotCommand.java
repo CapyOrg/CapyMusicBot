@@ -21,7 +21,7 @@ public abstract class MultiphaseBotCommand extends BotCommand {
         return currentPhase;
     }
 
-    public void setCurrentPhase(int currentPhase) {
+    protected void setCurrentPhase(int currentPhase) {
         this.currentPhase = currentPhase;
     }
 
@@ -29,7 +29,7 @@ public abstract class MultiphaseBotCommand extends BotCommand {
         return iterator;
     }
 
-    public void setIterator(int iterator) {
+    protected void setIterator(int iterator) {
         this.iterator = iterator;
     }
 }

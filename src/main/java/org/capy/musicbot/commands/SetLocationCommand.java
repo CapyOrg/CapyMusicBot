@@ -7,6 +7,8 @@ import org.capy.musicbot.service.Service;
 import org.capy.musicbot.service.ServiceContext;
 import org.capy.musicbot.service.ServiceException;
 import org.capy.musicbot.service.entries.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.api.methods.send.SendLocation;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.bots.AbsSender;
@@ -23,6 +25,7 @@ import static org.capy.musicbot.database.MongoManager.isQueryExecuted;
  * Created by enableee on 14.12.17.
  */
 public class SetLocationCommand extends MultiphaseBotCommand {
+    private static final Logger logger = LoggerFactory.getLogger(AddCommand.class.getSimpleName());
     private int iteratorMaxValue;
 
     protected SetLocationCommand() {
@@ -72,7 +75,9 @@ public class SetLocationCommand extends MultiphaseBotCommand {
                     try {
                         absSender.execute(locationMessage);
                     } catch (TelegramApiException e) {
-                        e.printStackTrace();
+                        logger.error("Failed to send location message in command " +
+                                SetLocationCommand.class.getSimpleName() +
+                                "; user @" + user.getUsername(), e);
                         isCommandExecuted = false;
                     }
                     setCurrentPhase(THIRD_PHASE);
@@ -99,7 +104,7 @@ public class SetLocationCommand extends MultiphaseBotCommand {
                 } else if (userAnswer.toLowerCase().equals("no")) {
                     setIterator(getIterator() + 1);
                     setCurrentPhase(SECOND_PHASE);
-                    mongoManager.updateCommandState(user.getId(), this);
+                    isCommandExecuted &= isQueryExecuted(mongoManager.updateCommandState(user.getId(), this));
                     isCommandExecuted &= this.execute(absSender, user, null);
                 } else {
                     messageBuilder
