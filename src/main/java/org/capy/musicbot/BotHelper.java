@@ -5,6 +5,7 @@ import org.capy.musicbot.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.bots.AbsSender;
@@ -98,5 +99,15 @@ public class BotHelper {
             logger.error("Failed to send keyboard message to user @" + user.getUsername(), e);
             return false;
         }
+    }
+
+    public static boolean messageHasAttachment(Update update) {
+        return (update.hasMessage() &&
+                (update.getMessage().hasPhoto() ||
+                        update.getMessage().hasDocument() ||
+                        update.getMessage().hasLocation() ||
+                        update.getMessage().hasInvoice() ||
+                        update.getMessage().hasSuccessfulPayment() ||
+                        update.getMessage().hasSuccessfulPayment()));
     }
 }

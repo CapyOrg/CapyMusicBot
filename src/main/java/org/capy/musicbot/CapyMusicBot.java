@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
+import static org.capy.musicbot.BotHelper.messageHasAttachment;
 import static org.capy.musicbot.BotHelper.sendMessageToUser;
 import static org.capy.musicbot.commands.CommandSimpleFactory.createCommand;
 
@@ -52,9 +53,7 @@ public class CapyMusicBot extends TelegramLongPollingBot {
                 } catch (ServiceException e) {
                     logger.error("Method " + command.getClass().getSimpleName() + " started by user @" + username + " throws ", e);
                 }
-            }
-
-            else {
+            } else {
                 StringBuilder builder = new StringBuilder();
                 if (messageText.startsWith("/")) {
                     builder.append("I don't know this command. Please, use one of" +
@@ -86,6 +85,13 @@ public class CapyMusicBot extends TelegramLongPollingBot {
                     }
                 }
             }
+        } else if (messageHasAttachment(update)) {
+            long chatId = update.getMessage().getChatId();
+            String firstName = update.getMessage().getChat().getFirstName();
+            String lastName = update.getMessage().getChat().getLastName();
+            String username = update.getMessage().getChat().getUserName();
+            long id = update.getMessage().getChat().getId();
+            sendMessageToUser(new User(id, chatId, username, firstName, lastName), this, "I don't know how to deal with this yet!");
         }
     }
 
