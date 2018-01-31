@@ -83,8 +83,8 @@ public interface ServiceApi {
      * @param page the page number to fetch
      * @param perPage the number of results to fetch per page
      * @return {@link ServiceResponse} with {@link List} of user's artists
-     * @throws ServiceException if username is incorrect or something else went wrong
-     * @throws InvalidUsernameException if username is not found on LastFM service
+     * @throws ServiceException if something else went wrong
+     * @throws InvalidUsernameException if username is not found on Last.fm service
      */
     ServiceResponse<List<Artist>> getLastFmUserArtists(String lastFmUsername, int page, int perPage) throws ServiceException, InvalidUsernameException;
 

@@ -1,5 +1,8 @@
 package org.capy.musicbot.updater;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.capy.musicbot.Utils;
 import org.capy.musicbot.entities.Artist;
 import org.capy.musicbot.notifier.Notifier;
 import org.capy.musicbot.service.Service;
@@ -19,6 +22,8 @@ import java.util.*;
  * @author BlizzedRu
  */
 public final class UpdateService {
+
+    private static final Logger log = LogManager.getLogger(UpdateService.class);
 
     public interface DataProvider {
         List<Artist> getArtists();
@@ -75,17 +80,20 @@ public final class UpdateService {
     private void startUpdate() {
         stopTracking();
         timer = new Timer();
-        timer.schedule(new UpdateTask(notifier), 0);
+        timer.schedule(new UpdateTask(notifier), 10000);
+        log.info("Start updating");
     }
 
     private void scheduleUpdate(Date when) {
         stopTracking();
         timer = new Timer();
         timer.schedule(new UpdateTask(notifier), when);
+        log.info("Next update scheduled at {}", Utils.dateFormat(when));
     }
 
     private void setStatus(Status status) {
         this.status = status;
+        log.info("Status changed to {}", status.name());
     }
 
     private Settings getSettings() {
@@ -164,12 +172,14 @@ public final class UpdateService {
                     onSuccess();
                 } catch (ServiceException e) {
                     e.printStackTrace();
+                    log.error("Error while updating has occured {}", e.getMessage());
                     onError();
                 }
             }).run();
         }
 
         private void onSuccess() {
+            log.info("Successfully updated at {}", Utils.dateFormat(Instant.now()));
             getSettings().setLastUpdate(Instant.now().getEpochSecond());
             setStatus(Status.WAITING);
             scheduleUpdate(Date.from(Instant.now().plus(Duration.ofSeconds(settings.getUpdatePeriod()))));
@@ -189,7 +199,9 @@ public final class UpdateService {
 
             @Override
             public void onUpdatesReceived(Artist artist, List<Event> updates) {
-                notifier.notifyEvents(artist, updates);
+                if (updates.isEmpty()) {
+                    notifier.notifyEvents(artist, updates);
+                }
             }
         }
 
@@ -203,7 +215,10 @@ public final class UpdateService {
 
             @Override
             public void onUpdatesReceived(Artist artist, List<Release> updates) {
-                notifier.notifyReleases(artist, updates);
+                if (!updates.isEmpty()) {
+                    artist.setLastRelease(updates.get(updates.size() - 1));
+                    notifier.notifyReleases(artist, updates);
+                }
             }
         }
 

@@ -22,9 +22,6 @@ public class Artist {
     private String name;
 
     @Embedded
-    private Event lastEvent;
-
-    @Embedded
     private Release lastRelease;
 
     private long discogsId;
@@ -61,12 +58,12 @@ public class Artist {
         return subscribers;
     }
 
-    public Event getLastEvent() {
-        return lastEvent;
-    }
-
     public Release getLastRelease() {
         return lastRelease;
+    }
+
+    public void setLastRelease(Release lastRelease) {
+        this.lastRelease = lastRelease;
     }
 
     public org.capy.musicbot.service.entries.Artist toServiceArtist() {

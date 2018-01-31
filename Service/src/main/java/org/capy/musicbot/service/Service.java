@@ -1,5 +1,7 @@
 package org.capy.musicbot.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.capy.musicbot.service.converters.*;
 import org.capy.musicbot.service.entries.Artist;
 import org.capy.musicbot.service.entries.Event;
@@ -16,7 +18,6 @@ import ru.blizzed.discogsdb.params.SortOrderParam;
 import ru.blizzed.discogsdb.params.SortParam;
 import ru.blizzed.openlastfm.ApiRequestException;
 import ru.blizzed.openlastfm.ApiResponseException;
-import ru.blizzed.openlastfm.OpenLastFMContext;
 import ru.blizzed.openlastfm.errors.LastFMErrors;
 import ru.blizzed.openlastfm.methods.ApiArtist;
 import ru.blizzed.openlastfm.methods.ApiResponse;
@@ -41,6 +42,8 @@ import java.util.stream.Collectors;
 
 public class Service implements ServiceApi {
 
+    private static final Logger log = LogManager.getLogger(Service.class);
+
     private static final int SEARCH_LIMIT = 15;
 
     Service() {
@@ -63,6 +66,7 @@ public class Service implements ServiceApi {
             if (!artists.isEmpty()) artists.set(0, supplementByInfo(artists.get(0)).getContent());
             return new ServiceResponse<>(artists, true);
         } catch (ApiResponseException | ApiRequestException e) {
+            log.error("Service error occurred: %s", e.getMessage());
             throw new ServiceException(e);
         }
     }
@@ -75,6 +79,7 @@ public class Service implements ServiceApi {
             infoConverter.join(artist, response.getContent());
             return new ServiceResponse<>(artist, true);
         } catch (ApiResponseException | ApiRequestException e) {
+            log.error("Service error occurred: %s", e.getMessage());
             throw new ServiceException(e);
         }
     }
@@ -86,6 +91,7 @@ public class Service implements ServiceApi {
             if (!resultPage.getContent().isEmpty()) artist.setDiscogsId(resultPage.getContent().get(0).getId());
             return new ServiceResponse<>(artist, true);
         } catch (DiscogsDBCallException | DiscogsDBErrorException e) {
+            log.error("Service error occurred: %s", e.getMessage());
             throw new ServiceException(e);
         }
     }
@@ -104,6 +110,7 @@ public class Service implements ServiceApi {
             }
             return new ServiceResponse<>(releases, true);
         } catch (DiscogsDBCallException | DiscogsDBErrorException e) {
+            log.error("Service error occurred: %s", e.getMessage());
             throw new ServiceException(e);
         }
     }
@@ -124,6 +131,7 @@ public class Service implements ServiceApi {
             }
             return new ServiceResponse<>(releases, true);
         } catch (DiscogsDBCallException | DiscogsDBErrorException e) {
+            log.error("Service error occurred: %s", e.getMessage());
             throw new ServiceException(e);
         }
     }
@@ -145,6 +153,7 @@ public class Service implements ServiceApi {
                     .collect(Collectors.toList());
             return new ServiceResponse<>(locations, true);
         } catch (ApiCallException | ApiErrorException e) {
+            log.error("Service error occurred: %s", e.getMessage());
             throw new ServiceException(e);
         }
     }
@@ -162,6 +171,7 @@ public class Service implements ServiceApi {
                     .collect(Collectors.toList());
             return new ServiceResponse<>(locations, true);
         } catch (ApiCallException | ApiErrorException e) {
+            log.error("Service error occurred: %s", e.getMessage());
             throw new ServiceException(e);
         }
     }
@@ -188,6 +198,7 @@ public class Service implements ServiceApi {
                 throw new InvalidUsernameException(String.format("Username %s is not found on LastFM service", lastFmUsername));
             else throw new ServiceException(e);
         } catch (ApiRequestException e) {
+            log.error("Service error occurred: %s", e.getMessage());
             throw new ServiceException(e);
         }
     }

@@ -1,5 +1,7 @@
 package org.capy.musicbot.updater;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.capy.musicbot.service.Service;
 import org.capy.musicbot.service.ServiceException;
 
@@ -16,11 +18,14 @@ import java.util.Objects;
  */
 public abstract class Updater<UpdateType, Source> {
 
+    private static final Logger log = LogManager.getLogger(Updater.class);
+
+
     public interface Listener<UpdateType, Source> {
         void onUpdatesReceived(Source source, List<UpdateType> updates);
     }
 
-    protected long timeout;
+    private long timeout;
     protected Service service;
 
     public Updater(Service service, long timeout) {
@@ -53,8 +58,10 @@ public abstract class Updater<UpdateType, Source> {
 
     protected void takeTimeout() {
         try {
+            log.debug("Taking timeout");
             Thread.sleep(timeout);
         } catch (InterruptedException ex) {
+            log.error("An error occurred while taking timeout: {}", ex.getMessage());
             Thread.currentThread().interrupt();
         }
     }

@@ -5,6 +5,7 @@ import org.capy.musicbot.service.Service;
 import org.capy.musicbot.service.ServiceException;
 import org.capy.musicbot.service.entries.Release;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,6 +19,9 @@ public class ReleasesUpdater extends Updater<Release, Artist> {
     protected List<Release> getUpdates(Artist artist) throws ServiceException {
         if (artist.getDiscogsId() == -1)
             return Collections.emptyList();
-        return service.getLastReleases(artist.toServiceArtist(), artist.getLastRelease()).getContent();
+        if (artist.getLastRelease() != null)
+            return service.getLastReleases(artist.toServiceArtist(), artist.getLastRelease()).getContent();
+        else
+            return service.getLastReleases(artist.toServiceArtist(), Instant.now()).getContent();
     }
 }
